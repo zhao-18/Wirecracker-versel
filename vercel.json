@@ -18,6 +18,10 @@
     {
       "src": "/auth/(.*)",
       "dest": "/backend/server.js"
+    },
+    {
+      "src": "/debug",
+      "dest": "/backend/server.js"
     }
   ]
 }
