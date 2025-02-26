@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<!-- Test: Typical fullscreen usage; autoload an image and overlay. -->
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <script type="module">
+        import load_untouch_nii from '../load_untouch_nifti.js'
+        import nifti_anatomical_conversion from '../nifti_anatomical_conversion.js'
+        import load_nii from '../load_nifti.js'
+        window.load_untouch_nii = load_untouch_nii;
+        window.nifti_anatomical_conversion = nifti_anatomical_conversion;
+        window.load_nii = load_nii;
+    </script>
+
+    <script type="text/javascript">
+        function readNIFTI(name, data) {
+            var canvas = document.getElementById('myCanvas');
+            var slider = document.getElementById('myRange');
+            var direction = document.getElementById('mySelect');
+
+            // parse nifti
+            console.log("reading NIFTI file...");
+            var nii = load_nii(name, data);
+            nii = nifti_anatomical_conversion(nii);
+
+            var slices;
+            var dir;
+
+            direction.onchange = function() {
+                switch ( direction.value ) {
+                    case 'top':
+                        dir = 3;
+                        break;
+                    case 'front':
+                        dir = 2;
+                        break;
+                    case 'side':
+                        dir = 1;
+                        break;
+                }
+                slices = nii.hdr.dime.dim[dir];
+                slider.max = slices - 1;
+                slider.value = Math.round(slices / 2);
+
+                drawCanvas(canvas, slider.value, nii, dir);
+            }
+
+            switch ( direction.value ) {
+                case 'top':
+                    dir = 3;
+                    break;
+                case 'front':
+                    dir = 2;
+                    break;
+                case 'side':
+                    dir = 1;
+                    break;
+            }
+
+            // set up slider
+            slices = nii.hdr.dime.dim[dir];
+            slider.max = slices - 1;
+            slider.value = Math.round(slices / 2);
+
+            slider.oninput = function() {
+                drawCanvas(canvas, slider.value, nii, dir);
+            };
+
+            // draw slice
+            drawCanvas(canvas, slider.value, nii, dir);
+        }
+
+        function drawCanvas(canvas, slice, nii, dir) {
+            // get nifti dimensions
+            var cols;
+            var rows;
+            if (dir == 1) {
+                cols = nii.hdr.dime.dim[2];
+                rows = nii.hdr.dime.dim[3];
+            } else if (dir == 2) {
+                cols = nii.hdr.dime.dim[1];
+                rows = nii.hdr.dime.dim[3];
+            } else if (dir == 3) {
+                cols = nii.hdr.dime.dim[1];
+                rows = nii.hdr.dime.dim[2];
+            }
+
+            // set canvas dimensions to nifti slice dimensions
+            // var maxDim = Math.max(rows, cols);
+
+            // Showcase fixed size canvas
+            var maxDim = 500;
+            var scaleRow = rows < maxDim ? maxDim / rows : 1;
+            var scaleCol = cols < maxDim ? maxDim / cols : 1;
+            canvas.height = maxDim;
+            canvas.width = maxDim;
+
+            // make canvas image data
+            var ctx = canvas.getContext("2d");
+            var canvasImageData = ctx.createImageData(canvas.width, canvas.height);
+            var value;
+            if ( (nii.hdr.dime.datatype == 128 && nii.hdr.dime.bitpix == 24) ||
+                (nii.hdr.dime.datatype == 511 && nii.hdr.dime.bitpix == 96) ) {
+                for (var row = 0; row < maxDim; row++) {
+                    var originalRowFlipped = rows - 1 - Math.floor(row / scaleRow);
+
+                    var rowOffset = row * maxDim;
+
+                    for (var col = 0; col < maxDim; col++) {
+                        var originalCol = Math.floor(col / scaleCol);
+
+                        if (dir == 1) {
+                            value = nii.img[originalRowFlipped][originalCol][slice];
+                        } else if (dir == 2) {
+                            value = nii.img[originalRowFlipped][slice][originalCol];
+                        } else if (dir == 3) {
+                            value = nii.img[slice][originalRowFlipped][originalCol];
+                        }
+                        canvasImageData.data[(rowOffset + col) * 4] = value[0];     // R
+                        canvasImageData.data[(rowOffset + col) * 4 + 1] = value[1]; // G
+                        canvasImageData.data[(rowOffset + col) * 4 + 2] = value[2]; // B
+                        canvasImageData.data[(rowOffset + col) * 4 + 3] = 255;   // A
+                    }
+                }
+            } else {
+                for (var row = 0; row < maxDim; row++) {
+                    var originalRowFlipped = rows - 1 - Math.floor(row / scaleRow);
+
+                    var rowOffset = row * maxDim;
+
+                    for (var col = 0; col < maxDim; col++) {
+                        var originalCol = Math.floor(col / scaleCol);
+
+                        if (dir == 1) {
+                            value = nii.img[originalRowFlipped][originalCol][slice] / nii.hdr.dime.glmax * 255;
+                        } else if (dir == 2) {
+                            value = nii.img[originalRowFlipped][slice][originalCol] / nii.hdr.dime.glmax * 255;
+                        } else if (dir == 3) {
+                            value = nii.img[slice][originalRowFlipped][originalCol] / nii.hdr.dime.glmax * 255;
+                        }
+                        canvasImageData.data[(rowOffset + col) * 4] = value;     // R
+                        canvasImageData.data[(rowOffset + col) * 4 + 1] = value; // G
+                        canvasImageData.data[(rowOffset + col) * 4 + 2] = value; // B
+                        canvasImageData.data[(rowOffset + col) * 4 + 3] = 255;   // A
+                    }
+                }
+            }
+
+
+
+            ctx.putImageData(canvasImageData, 0, 0);
+        }
+
+        function makeSlice(file, start, length) {
+            var fileType = (typeof File);
+
+            if (fileType === 'undefined') {
+                return function () {};
+            }
+
+            if (File.prototype.slice) {
+                return file.slice(start, start + length);
+            }
+
+            if (File.prototype.mozSlice) {
+                return file.mozSlice(start, length);
+            }
+
+            if (File.prototype.webkitSlice) {
+                return file.webkitSlice(start, length);
+            }
+
+            return null;
+        }
+
+        function readFile(file) {
+            var blob = makeSlice(file, 0, file.size);
+
+            var reader = new FileReader();
+
+            reader.onloadend = function (evt) {
+                if (evt.target.readyState === FileReader.DONE) {
+                    readNIFTI(file.name, evt.target.result);
+                }
+            };
+
+            reader.readAsArrayBuffer(blob);
+        }
+
+        function handleFileSelect(evt) {
+            var files = evt.target.files;
+            readFile(files[0]);
+        }
+    </script>
+
+    <title>NIFTI parser Test</title>
+</head>
+
+<body>
+
+<div id="select" style="font-family:sans-serif">
+    <p>Select a file: <input type="file" id="file" name="files" /></p>
+    <hr />
+</div>
+
+<div id="results">
+    <canvas id="myCanvas" width="100" height="100"></canvas><br />
+    <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+    <select id="mySelect">
+        <option value="top" selected>Axial</option>
+        <option value="front">Coronal</option>
+        <option value="side">Sagital</option>
+    </select>
+</div>
+
+<script type="text/javascript">
+    document.getElementById('file').addEventListener('change', handleFileSelect, false);
+</script>
+
+</body>
+
+</html>

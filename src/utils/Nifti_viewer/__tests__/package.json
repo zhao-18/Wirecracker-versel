@@ -1,0 +1,12 @@
+{
+  "type": "module",
+  "dependencies": {
+    "jest": "^29.7.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.26.9"
+  },
+  "scripts": {
+    "test": "jest"
+  }
+}

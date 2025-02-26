@@ -1,0 +1,22 @@
+### THIS CSV IS NOT INTENDED TO BE USED AT WIRECRACKER.COM FOR LOCALIZATION ###
+### THESE TWO LINES SERVES AS IDENTIFIER. DO NOT DELETE ###
+Label,ContactNumber,AssociatedLocation,Mark,SurgeonMark,x,y,z
+D',1,Left Entorhinal,1,true,22,26,24
+D',2,Left Entorhinal,1,true,32,36,34
+D',3,Left Entorhinal,0,false,42,46,44
+D',4,WM,0,false,52,56,54
+D',5,WM,0,false,62,66,64
+D',6,WM,0,false,72,76,74
+D',7,Left MFG,0,false,82,86,84
+D',9,Left MFG,3,false,102,106,104
+D',8,Left MFG,3,false,92,96,94
+D',10,Left MFG,3,false,112,116,114
+D',11,Left MFG,3,false,122,126,124
+U',1,LocA,1,false,223,122,190
+U',2,LocA,1,false,213,122,190
+U',3,WM,0,true,203,122,190
+U',4,WM,0,true,193,122,190
+U',5,WM,0,true,183,122,190
+U',6,LocB,2,true,173,122,190
+U',7,LocB,2,true,163,122,190
+U',8,OOB,2,true,153,122,190

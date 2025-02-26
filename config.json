@@ -1,0 +1,9 @@
+{
+  "db_name": "test_db",
+  "db_user": "test_user",
+  "db_pass": "test_password",
+  "pg_admin": "postgres",
+  "host": "localhost",
+  "port": 5432,
+  "data_dir": "data/sample/"
+}

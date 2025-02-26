@@ -1,0 +1,5 @@
+id,epilepsy_type,cort_id,gm_id,test_id,disruption_rate,frequency,current,pulse_duration,test_duration
+1,Type A,1,100,300,0.5,50,2.5,0.2,60
+2,Type B,2,101,301,0.6,60,3.0,0.3,70
+3,Type C,3,102,302,0.7,70,3.5,0.4,80
+4,Type D,4,103,303,0.8,80,4.0,0.5,90
