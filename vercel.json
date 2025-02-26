@@ -22,6 +22,14 @@
     {
       "src": "/debug",
       "dest": "/backend/server.js"
+    },
+    {
+      "src": "/login",
+      "dest": "/backend/server.js"
+    },
+    {
+      "src": "/signup",
+      "dest": "/backend/server.js"
     }
   ]
 }
