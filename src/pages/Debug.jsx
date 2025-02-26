@@ -9,7 +9,7 @@ const Debug = () => {
     const [error, setError] = useState("");
 
     useEffect(() => {
-        fetch("http://localhost:5000/api/tables")
+        fetch("https://wirecracker-versel.vercel.app/api/tables")
             .then(response => response.json())
             .then(data => {
                 setTables(data.tables);
