@@ -20,7 +20,7 @@
       "dest": "/backend/server.js"
     },
     {
-      "src": "/debug",
+      "src": "/database/(.*)",
       "dest": "/backend/server.js"
     },
     {
