@@ -8,6 +8,9 @@ import DatabaseTable from "./pages/DatabaseTable";
 import GoogleAuthSuccess from "./pages/GoogleAuthSuccess";
 import { parseCSVFile, Identifiers } from './utils/CSVParser';
 import Localization from './pages/Localization';
+import PlanTypePage from './pages/StimulationPlanning/PlanTypeSelection'
+import ContactSelection from './pages/StimulationPlanning/ContactSelection'
+import FunctionalTestSelection from './pages/StimulationPlanning/FunctionalTestSelection'
 
 const Tab = ({ title, isActive, onClick, onClose }) => {
     return (
@@ -319,7 +322,9 @@ const App = () => {
                 <Route path="/database/:table" element={<DatabaseTable />} />
                 <Route path="/auth-success" element={<GoogleAuthSuccess />} />
                 <Route path="/localization" element={<Localization />} />
-                <Route path="/stimulation" element={<HomePage />} />
+                <Route path="/stimulation" element={<PlanTypePage />} />
+                <Route path="/stimulation/contacts" element={<ContactSelection />} />
+                <Route path="/stimulation/functional-tests" element={<FunctionalTestSelection />} />
             </Routes>
         </Router>
     );
