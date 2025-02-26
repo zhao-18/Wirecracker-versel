@@ -245,7 +245,7 @@ const SignInButtons = () => {
                 </Link>
             </div>
             <div className="flex m-10 justify-center">
-                <a href="http://localhost:5000/auth/google">
+                <a href="https://wirecracker-versel.vercel.app/auth/google">
                     <button className="bg-blue-500 font-semibold rounded-xl w-40 py-3">
                         Sign in with Google
                     </button>
