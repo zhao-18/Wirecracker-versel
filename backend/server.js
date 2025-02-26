@@ -8,7 +8,7 @@ import oauthRoutes from './oauth.js';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 25001;
 
 app.use('/', oauthRoutes);
 app.use("/api", apiRoutes);
