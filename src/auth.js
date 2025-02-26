@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function sendVerificationEmail(email, code) {
     try {
-        const response = await fetch('http://localhost:5000/send-verification-email', {
+        const response = await fetch('https://wirecracker-versel.vercel.app/send-verification-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, code }),
