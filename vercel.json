@@ -29,7 +29,7 @@
     },
     {
       "src": "/success",
-      "dest": "/backend/oauth.js"
+      "dest": "/src/pages/GoogleAuthSuccess.jsx"
     }
   ]
 }
