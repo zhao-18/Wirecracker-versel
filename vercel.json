@@ -26,6 +26,14 @@
     {
       "src": "/send-verification-email",
       "dest": "/backend/server.js"
+    },
+    {
+      "src": "/success(*)",
+      "dest": "/src/pages/GoogleAuthSuccess.jsx"
+    },
+    {
+      "src": "/debug",
+      "dest": "/src/pages/Debug.jsx"
     }
   ]
 }
