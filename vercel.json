@@ -24,6 +24,10 @@
       "dest": "src/pages/DatabaseTable.jsx"
     },
     {
+      "src": "/debug/(.*)",
+      "dest": "src/pages/Debug.jsx"
+    },
+    {
       "src": "/send-verification-email",
       "dest": "/backend/server.js"
     },
