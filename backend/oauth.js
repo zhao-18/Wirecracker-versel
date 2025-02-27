@@ -92,10 +92,7 @@ router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    if (req.user.token) {
-        localStorage.setItem("token", req.user.token);
-    }
-    res.redirect("/");
+    res.redirect(`/success?token=${req.user.token}`);
   }
 );
 
