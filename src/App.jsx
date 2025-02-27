@@ -323,7 +323,7 @@ const App = () => {
                 <Route path="/stimulation/contacts" element={<ContactSelection />} />
                 <Route path="/stimulation/functional-tests" element={<FunctionalTestSelection />} />
                 <Route path="/debug" element={<Debug />} />
-                <Route path="/auth-success" element={<GoogleAuthSuccess />} />
+                <Route path="/success" element={<GoogleAuthSuccess />} />
             </Routes>
         </Router>
     );
