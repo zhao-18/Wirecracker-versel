@@ -29,7 +29,7 @@
     },
     {
       "src": "/success",
-      "dest": "/backend/server.js"
+      "dest": "/backend/oauth.js"
     }
   ]
 }
