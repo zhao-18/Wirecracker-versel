@@ -3,14 +3,14 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Signup from './pages/Signup';
 import Login from './pages/Login';
 import Dropdown from './utils/Dropdown';
-import Debug from './pages/Debug';
 import DatabaseTable from "./pages/DatabaseTable";
-import GoogleAuthSuccess from "./pages/GoogleAuthSuccess";
 import { parseCSVFile, Identifiers } from './utils/CSVParser';
 import Localization from './pages/Localization';
 import PlanTypePage from './pages/StimulationPlanning/PlanTypeSelection'
 import ContactSelection from './pages/StimulationPlanning/ContactSelection'
 import FunctionalTestSelection from './pages/StimulationPlanning/FunctionalTestSelection'
+import Debug from './pages/Debug';
+import GoogleAuthSuccess from "./pages/GoogleAuthSuccess";
 
 const Tab = ({ title, isActive, onClick, onClose }) => {
     return (
@@ -317,13 +317,13 @@ const App = () => {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/debug" element={<Debug />} />
                 <Route path="/database/:table" element={<DatabaseTable />} />
-                <Route path="/auth-success" element={<GoogleAuthSuccess />} />
                 <Route path="/localization" element={<Localization />} />
                 <Route path="/stimulation" element={<PlanTypePage />} />
                 <Route path="/stimulation/contacts" element={<ContactSelection />} />
                 <Route path="/stimulation/functional-tests" element={<FunctionalTestSelection />} />
+                <Route path="/debug" element={<Debug />} />
+                <Route path="/auth-success" element={<GoogleAuthSuccess />} />
             </Routes>
         </Router>
     );
