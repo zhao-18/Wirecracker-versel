@@ -21,7 +21,7 @@
     },
     {
       "src": "/database/(.*)",
-      "dest": "/backend/server.js"
+      "dest": "src/pages/DatabaseTable.jsx"
     },
     {
       "src": "/send-verification-email",
