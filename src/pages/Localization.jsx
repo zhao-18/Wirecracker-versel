@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Popup from 'reactjs-popup';
-import { Container, Button, Link } from 'react-floating-action-button';
+import { Container, Button, darkColors, lightColors } from 'react-floating-action-button';
 import 'reactjs-popup/dist/index.css';
 
 const Localization = () => {
@@ -126,7 +126,7 @@ const Localization = () => {
                 <div className="flex justify-between">
                     <h1 className="text-2xl font-bold mb-4">New Localization</h1>
                     <button
-                        className="w-40 bg-blue-500 text-white font-semibold rounded">
+                        className="w-40 bg-sky-700 text-white font-semibold rounded">
                         Save Localization
                     </button>
                 </div>
@@ -136,6 +136,7 @@ const Localization = () => {
                 <Popup
                     trigger={<Button
                             tooltip="Add a new electrode"
+                            styles={{backgroundColor: darkColors.lightBlue, color: lightColors.white}}
                             onClick={() => setIsElectrodePopupOpen(true)}>
                             <div>+</div>
                         </Button>}

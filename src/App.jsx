@@ -230,7 +230,6 @@ const Right = () => {
 const Logo = () => {
     return (
         <div className="flex flex-col items-center m-5">
-            <img alt="Logo"/>
             <h1 className="text-8xl font-bold mt-5">Wirecracker</h1>
         </div>
     );
