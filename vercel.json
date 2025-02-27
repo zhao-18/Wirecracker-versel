@@ -30,6 +30,10 @@
     {
       "src": "/success",
       "dest": "/src/pages/GoogleAuthSuccess.jsx"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
