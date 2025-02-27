@@ -29,7 +29,7 @@
     },
     {
       "src": "/success(*)",
-      "dest": "/src/pages/GoogleAuthSuccess.jsx"
+      "dest": "/backend/server.js"
     },
     {
       "src": "/debug",
