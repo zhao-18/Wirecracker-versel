@@ -11,6 +11,15 @@
     }
   ],
   "routes": [
+    
+    {
+      "src": "/send-verification-email",
+      "dest": "/backend/server.js"
+    },
+    {
+      "src": "/api/[^.]+",
+      "dest": "/backend/server.js"
+    },
     {
       "src": "/[^.]+",
       "dest": "/",
