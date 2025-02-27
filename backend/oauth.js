@@ -90,9 +90,9 @@ router.get("/auth/google", passport.authenticate("google", { scope: ["profile", 
 // Google Auth Callback
 router.get(
   "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "http://localhost:5173/" }),
+  passport.authenticate("google", { failureRedirect: "https://wirecracker-versel.vercel.app/" }),
   (req, res) => {
-    res.redirect(`http://localhost:5173/auth-success?token=${req.user.token}`);
+    res.redirect(`https://wirecracker-versel.vercel.app/auth-success?token=${req.user.token}`);
   }
 );
 
