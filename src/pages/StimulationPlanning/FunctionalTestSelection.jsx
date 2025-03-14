@@ -10,11 +10,11 @@ const FunctionalTestSelection = ({
     const allAvailableTests = demoTestData;
 
     const [contacts, setContacts] = useState(
-        savedState.contacts || initialData.data.contacts || demoContactsData
+        savedState.contacts || initialData.data?.contacts || demoContactsData
     );
     const [tests, setTests] = useState(() => {
         if (savedState.tests) return savedState.tests;
-        if (initialData.data.tests) {
+        if (initialData.data?.tests) {
             let loadedTests = {};
             Object.entries(initialData.data.tests).map(([contactID, tests]) => { // for each contact
                 loadedTests[contactID] = tests.map(test => {
