@@ -948,7 +948,7 @@ const Logo = () => {
 
 export const GoogleSignInButton = () => {
     const handleGoogleSignIn = () => {
-        window.location.href = "http://localhost:5000/auth/google";
+        window.location.href = "http://wirecracker-versel.vercel.app:5000/auth/google";
     };
 
     return (
