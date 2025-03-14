@@ -102,10 +102,10 @@ router.get("/auth/google", (req, res, next) => {
 // Google Auth Callback
 router.get(
     "/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "http://wirecracker-versel.vercel.app:5173/" }),
+    passport.authenticate("google", { failureRedirect: "https://wirecracker-versel.vercel.app:5173/" }),
     (req, res) => {
         const redirectPath = req.query.state || '/';
-        res.redirect(`http://wirecracker-versel.vercel.app:5173/auth-success?token=${req.user.token}&redirect=${redirectPath}`);
+        res.redirect(`https://wirecracker-versel.vercel.app:5173/auth-success?token=${req.user.token}&redirect=${redirectPath}`);
     }
 );
 

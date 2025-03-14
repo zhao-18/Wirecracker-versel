@@ -7,7 +7,7 @@ const DatabaseTable = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch(`http://wirecracker-versel.vercel.app:5000/api/tables/${table}`)
+        fetch(`https://wirecracker-versel.vercel.app:5000/api/tables/${table}`)
             .then(response => response.json())
             .then(data => {
                 setData(data);

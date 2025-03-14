@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 5000;
 
 // Configure CORS with specific options
 app.use(cors({
-    origin: 'http://wirecracker-versel.vercel.app:5173', // Your frontend URL
+    origin: 'https://wirecracker-versel.vercel.app:5173', // Your frontend URL
     credentials: true, // Allow credentials
     methods: ['GET', 'POST'], // Allowed methods
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -47,5 +47,5 @@ app.post('/send-verification-email', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server running on http://wirecracker-versel.vercel.app:${PORT}`);
+    console.log(`Server running on https://wirecracker-versel.vercel.app:${PORT}`);
 });
