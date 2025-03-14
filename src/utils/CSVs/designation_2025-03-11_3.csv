@@ -1,0 +1,22 @@
+### THIS CSV IS INTENDED TO BE USED AT WIRECRACKER.COM FOR DESIGNATION ###
+### THESE TWO LINES SERVES AS IDENTIFIER. DO NOT DELETE ###
+Label,ContactNumber,ElectrodeDescription,ContactDescription,AssociatedLocation,Mark,SurgeonMark
+D',1,Left Entorhinal,Left Entorhinal,GM,1,0
+D',2,Left Entorhinal,Left Entorhinal,GM,0,0
+D',3,Left Entorhinal,Left Entorhinal,GM,0,0
+D',4,Left Entorhinal,,WM,0,0
+D',5,Left Entorhinal,,WM,1,0
+D',6,Left Entorhinal,,WM,0,0
+D',7,Left Entorhinal,Left MFG,GM,0,0
+D',8,Left Entorhinal,Left MFG,GM,0,0
+D',9,Left Entorhinal,Left MFG,GM,0,0
+D',10,Left Entorhinal,Left MFG,GM,1,0
+D',11,Left Entorhinal,Left MFG,GM,0,0
+U',1,Left Anterior Hippocampus,L SMG,GM/WM,0,0
+U',2,Left Anterior Hippocampus,L SMG,GM/WM,0,0
+U',3,Left Anterior Hippocampus,,WM,0,0
+U',4,Left Anterior Hippocampus,,WM,0,0
+U',5,Left Anterior Hippocampus,,WM,0,0
+U',6,Left Anterior Hippocampus,L SMG+L Hippocampus,GM/GM,0,0
+U',7,Left Anterior Hippocampus,L SMG+L Hippocampus,GM/GM,0,0
+U',8,Left Anterior Hippocampus,,OOB,0,0

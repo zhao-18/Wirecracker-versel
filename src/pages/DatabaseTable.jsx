@@ -7,7 +7,7 @@ const DatabaseTable = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch(`https://wirecracker-versel.vercel.app/api/tables/${table}`)
+        fetch(`http://localhost:5000/api/tables/${table}`)
             .then(response => response.json())
             .then(data => {
                 setData(data);
@@ -25,9 +25,9 @@ const DatabaseTable = () => {
 
     const getTableURLFromKey = (key) => {
         if (key == "cort_id")
-            return "/database/cortical_subcortical";
+            return "/database/cort";
         if (key == "gm_id")
-            return "/database/gm_area";
+            return "/database/gm";
 
         return `/database/${key.replace("_id", "")}`;
     };

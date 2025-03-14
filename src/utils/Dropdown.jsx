@@ -10,58 +10,49 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
  * @param {String} closedClassName Classes of button when dropdown is closed
  * @param {String} openClassName Classes of button when dropdown is open
  * @param {String} options List of all dropdown menu options separated by spaces
- * @param {String} optionRefs List of references for all dropdown menu options separated by spaces
- * @param {String} optionsClassName Classes of dropdown menu item
+ * @param {String} optionClassName Classes of dropdown menu item
  * @param {String} menuClassName Classes of full dropdown menu
+ * @param {Function} onOptionClick Callback function to handle option click
  */
 const Dropdown = ({
     closedText,
-    openText = closedText,
+    openText,
     closedClassName,
-    openClassName = closedClassName,
+    openClassName,
     options,
-    optionRefs,
     optionClassName,
-    menuClassName}) => {
+    menuClassName,
+    onOptionClick
+}) => {
     const [isOpen, setIsOpen] = useState(false);
-    const optionsArray = options.split(' ');
-    const optionRefsArray = optionRefs.split(' ');
-    const menuClasses = "origin-top-right absolute right-0 " + menuClassName;
+    const optionsList = options.split(" ");
 
     return (
         <div className="relative inline-block text-left">
-            {isOpen ? (
-                <>
-                    <button onClick={() => setIsOpen(!isOpen)}
-                        className={openClassName}>
-                        {openText}
-                    </button>
-                    <div className={menuClasses}
-                        role="menu">
-                        <div className="py-1" role="none">
-                            {optionsArray.map((option, i) => {
-                                if (i < optionRefsArray.length) {
-                                    return (
-                                        <Link to={optionRefsArray[i]}
-                                            key={i}
-                                            role="menuItem">
-                                            <button onClick={() => setIsOpen(!isOpen)}
-                                                className={optionClassName}>
-                                                {option}
-                                            </button>
-                                        </Link>);
-                                }
-                            })}
-                        </div>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className={isOpen ? openClassName : closedClassName}
+            >
+                {isOpen ? openText : closedText}
+            </button>
+
+            {isOpen && (
+                <div className={`absolute top-full left-0 z-50 mt-1 ${menuClassName}`}>
+                    <div className="py-1" role="none">
+                        {optionsList.map((option, index) => (
+                            <button
+                                key={index}
+                                className={optionClassName}
+                                onClick={() => {
+                                    onOptionClick(option);
+                                    setIsOpen(false);
+                                }}
+                            >
+                                {option}
+                            </button>
+                        ))}
                     </div>
-                </>
-            ) : (
-                <>
-                    <button onClick={() => setIsOpen(!isOpen)}
-                        className={closedClassName}>
-                        {closedText}
-                    </button>
-                </>
+                </div>
             )}
         </div>
     );

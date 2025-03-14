@@ -10,11 +10,19 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Configure CORS with specific options
+app.use(cors({
+    origin: 'http://localhost:5173', // Your frontend URL
+    credentials: true, // Allow credentials
+    methods: ['GET', 'POST'], // Allowed methods
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['set-cookie']
+}));
+
+app.use(express.json()); // Parse JSON request body
+
 app.use('/', oauthRoutes);
 app.use("/api", apiRoutes);
-
-app.use(cors()); // Allow requests from frontend
-app.use(express.json()); // Parse JSON request body
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 

@@ -12,7 +12,7 @@ corticalSubcorticalItem.prototype = {
     constructor: corticalSubcorticalItem, // Ensure the constructor is set correctly
 
     load: function() {
-        let loaded_csc = corticalSubcorticalItem( ...fetch("cortical_subcortical", "id", this.id) ); // TODO: return complete structure of cortical_subcortical
+        let loaded_csc = corticalSubcorticalItem( ...fetch("cort", "id", this.id) ); // TODO: return complete structure of cortical_subcortical
 
         if (this.name == "")
             this.name = loaded_csc.name;

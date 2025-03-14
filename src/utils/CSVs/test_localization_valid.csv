@@ -1,0 +1,22 @@
+### THIS CSV IS INTENDED TO BE USED AT WIRECRACKER.COM FOR LOCALIZATION ###
+### THESE TWO LINES SERVES AS IDENTIFIER. DO NOT DELETE ###
+Label,ContactNumber,ElectrodeDescription,ContactDescription,AssociatedLocation,Mark,SurgeonMark,x,y,z
+D',1,Left Entorhinal,Left Entorhinal,GM,1,TRUE,22,26,24
+D',2,Left Entorhinal,Left Entorhinal,GM,1,TRUE,32,36,34
+D',3,Left Entorhinal,Left Entorhinal,GM,0,FALSE,42,46,44
+D',4,Left Entorhinal,,WM,0,FALSE,52,56,54
+D',5,Left Entorhinal,,WM,0,FALSE,62,66,64
+D',6,Left Entorhinal,,WM,0,FALSE,72,76,74
+D',7,Left Entorhinal,Left MFG,GM,0,FALSE,82,86,84
+D',9,Left Entorhinal,Left MFG,GM,3,FALSE,102,106,104
+D',8,Left Entorhinal,Left MFG,GM,3,FALSE,92,96,94
+D',10,Left Entorhinal,Left MFG,GM,3,FALSE,112,116,114
+D',11,Left Entorhinal,Left MFG,GM,3,FALSE,122,126,124
+U',1,Left Anterior Hippocampus,L SMG,GM/WM,1,FALSE,223,122,190
+U',2,Left Anterior Hippocampus,L SMG,GM/WM,1,FALSE,213,122,190
+U',3,Left Anterior Hippocampus,,WM,0,TRUE,203,122,190
+U',4,Left Anterior Hippocampus,,WM,0,TRUE,193,122,190
+U',5,Left Anterior Hippocampus,,WM,0,TRUE,183,122,190
+U',6,Left Anterior Hippocampus,L SMG+L Hippocampus,GM/GM,2,TRUE,173,122,190
+U',7,Left Anterior Hippocampus,L SMG+L Hippocampus,GM/GM,2,TRUE,163,122,190
+U',8,Left Anterior Hippocampus,,OOB,2,TRUE,153,122,190

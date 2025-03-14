@@ -12,7 +12,7 @@ Issue Number: N/A
 - [ ] Build related changes
 - [ ] CI related changes
 - [ ] Documentation content changes
-- [ ] Infrastructure changes
+- [ ] UI changes
 - [ ] Other... Please describe:
 
 

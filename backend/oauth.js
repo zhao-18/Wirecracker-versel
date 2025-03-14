@@ -5,6 +5,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
+import bcrypt from "bcryptjs";
 
 dotenv.config();
 
@@ -45,10 +46,15 @@ passport.use(
 
         // If the user does not exist, create a new one
         if (!user) {
+          // Generate a secure random string as password for Google users
+          const randomPassword = uuidv4();
+          const salt = await bcrypt.genSalt(10);
+          const hashedPassword = await bcrypt.hash(randomPassword, salt);
+
           const { data, error: insertError } = await supabase
             .from("users")
             .insert([
-              { email: profile.emails[0].value, name: profile.displayName, password_hash: 'google' },
+              { email: profile.emails[0].value, name: profile.displayName, password_hash: hashedPassword },
             ])
             .select()
             .single();
@@ -85,15 +91,22 @@ passport.deserializeUser((obj, done) => {
 });
 
 // Google Auth Route
-router.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+router.get("/auth/google", (req, res, next) => {
+    const state = req.query.redirect_uri || '/';
+    passport.authenticate('google', { 
+        scope: ['profile', 'email'],
+        state: state
+    })(req, res, next);
+});
 
 // Google Auth Callback
 router.get(
-  "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/" }),
-  (req, res) => {
-    res.redirect(`/success?token=${req.user.token}`);
-  }
+    "/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "http://localhost:5173/" }),
+    (req, res) => {
+        const redirectPath = req.query.state || '/';
+        res.redirect(`http://localhost:5173/auth-success?token=${req.user.token}&redirect=${redirectPath}`);
+    }
 );
 
 export default router;

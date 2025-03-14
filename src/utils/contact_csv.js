@@ -1,4 +1,4 @@
-function contact(_locationID, _contactNumber, _associatedLocation, _mark = 0, _surgeonMark = 0, _x = NaN, _y = NaN, _z = NaN) {
+function contact(_locationID, _contactNumber, _associatedLocation, _mark = 0, _surgeonMark = 0/*, _x = NaN, _y = NaN, _z = NaN*/) {
     // Deal with empty slot in CSV
     if ( _mark == "" ) _mark = 0;
     if ( _surgeonMark == "" ) _surgeonMark = 0;
@@ -11,9 +11,9 @@ function contact(_locationID, _contactNumber, _associatedLocation, _mark = 0, _s
     this.associatedLocation = _associatedLocation;
     this.mark = _mark;
     this.surgeonMark = _surgeonMark;
-    this.x = _x;
-    this.y = _y;
-    this.z = _z;
+    // this.x = _x;
+    // this.y = _y;
+    // this.z = _z;
 }
 
 contact.prototype = {
@@ -69,7 +69,7 @@ contact.prototype = {
         return this.associatedLocation == "WM" || this.associatedLocation == "WhiteMatter";
     },
 
-    isCoordsValid: function() {
-        return (this.x != NaN && this.y != NaN && this.z != NaN);
-    }
+    // isCoordsValid: function() {
+    //     return (this.x != NaN && this.y != NaN && this.z != NaN);
+    // }
 };

@@ -12,7 +12,7 @@ gmAreaItem.prototype = {
 
     load: function() {
         if (this.name == "" || this.acronym == "") {
-            let loaded_gm_area = gmAreaItem( ...fetch("gm_area", "id", this.id) ); // TODO: return structure containing id, name, and acronym
+            let loaded_gm_area = gmAreaItem( ...fetch("gm", "id", this.id) ); // TODO: return structure containing id, name, and acronym
 
             if (this.name == "")
                 this.name = loaded_gm_area.name;

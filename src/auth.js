@@ -1,11 +1,12 @@
 import { supabase } from './utils/supabaseClient';
+import bcrypt from 'bcryptjs';
 //import { sendVerificationEmail } from './utils/emailService';
 import { v4 as uuidv4 } from 'uuid';
 
 
 export async function sendVerificationEmail(email, code) {
     try {
-        const response = await fetch('https://wirecracker-versel.vercel.app/send-verification-email', {
+        const response = await fetch('http://localhost:5000/send-verification-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, code }),
@@ -23,10 +24,13 @@ export async function sendVerificationEmail(email, code) {
 }
 
 export async function signUp(email, name, password) {
-    // Hash password (in real-world apps, use a backend to hash)
+    // Hash the password with bcrypt
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     const { data: user, error } = await supabase
         .from('users')
-        .insert([{ email, name, password_hash: password }])
+        .insert([{ email, name, password_hash: hashedPassword }])
         .select();
 
     if (error) throw new Error(error.message);
@@ -74,10 +78,13 @@ export async function login(email, password, rememberMe) {
         .from('users')
         .select('*')
         .eq('email', email)
-        .eq('password_hash', password)
         .single();
 
     if (error || !user) throw new Error('Invalid credentials');
+
+    // Verify the password using bcrypt
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    if (!isValidPassword) throw new Error('Invalid credentials');
 
     const token = uuidv4();
     const expiresAt = new Date(Date.now() + (rememberMe ? 14 : 1) * 24 * 60 * 60 * 1000);

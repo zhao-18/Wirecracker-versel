@@ -1,6 +1,6 @@
 <!--
-This README is created based on template available at https://github.com/othneildrgvew/Best-README-Template
-Almost all the comments are left untouched. TEST! AGAIN!lxgchjkb
+This README is created based on template available at https://github.com/othneildrew/Best-README-Template
+Almost all the comments are left untouched.
 -->
 <a id="readme-top"></a>
 
@@ -79,7 +79,7 @@ _[Add screenshot of "home page"]_
 
 Wirecracker is a unified platform that streamlines the coordination and sharing of brain function tests used by researchers and clinicians.
 * Centralizing Test Resources: Wirecracker hosts a curated library of tests designed to evaluate diverse aspects of brain functionality.
-* Facilitating Collaboration: The platform allows teams from different specialties to plan, review, and edit stimulation protocols in real time, ensuring smooth communication during time-sensitive procedures.
+* Facilitating Collaboration: The platform allows teams from different specialties to plan, review, and edit localization and stimulation protocols, ensuring smooth communication during time-sensitive procedures.
 * Standardizing Data Sharing: By providing a centralized repository, Wirecracker makes it easy to share test methodologies and results across health centers, promoting consistency and innovation in research and clinical practices.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

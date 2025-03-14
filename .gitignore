@@ -1,2 +1,5 @@
 .env
 node_modules/
+.DS_Store
+src/utils/Nifti_viewer/ExampleData/
+src/utils/Nifti_viewer/ExampleData.zip
