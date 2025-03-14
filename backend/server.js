@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 5000;
 
 // Configure CORS with specific options
 app.use(cors({
-    origin: 'https://wirecracker-versel.vercel.app:5173', // Your frontend URL
+    origin: 'https://wirecracker-versel.vercel.app', // Your frontend URL
     credentials: true, // Allow credentials
     methods: ['GET', 'POST'], // Allowed methods
     allowedHeaders: ['Content-Type', 'Authorization'],

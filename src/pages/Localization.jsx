@@ -179,7 +179,7 @@ const Localization = ({ initialData = {}, onStateChange, savedState = {} }) => {
             console.log('Sending data to backend:', dataToSend);
             
             // Save localization data with file ID
-            const response = await fetch('https://wirecracker-versel.vercel.app:5000/api/save-localization', {
+            const response = await fetch('https://wirecracker-versel.vercel.app/api/save-localization', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
