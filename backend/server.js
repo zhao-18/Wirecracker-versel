@@ -46,6 +46,4 @@ app.post('/send-verification-email', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on https://wirecracker-versel.vercel.app:${PORT}`);
-});
+export default app;
