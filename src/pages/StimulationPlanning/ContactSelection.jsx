@@ -420,7 +420,6 @@ const PlanningPane = ({ state, electrodes, contacts, onDrop, onDropBack, submitF
 
 // Draggable contact in planning pane area
 const PlanningContact = ({ contact, onDropBack, onStateChange, savedState, setElectrodes }) => {
-    console.log(contact)
     // To persist between tab switch and reload
     const [frequency, setFrequency] = useState(savedState.frequency?.[contact.id] || contact.frequency || 0);
     const [duration, setDuration] = useState(savedState.duration?.[contact.id] || contact.duration || 0);
