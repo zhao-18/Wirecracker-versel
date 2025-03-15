@@ -1,6 +1,6 @@
 {
   "_comment": "port: backend port, frontendURL: front-end's url (e.g. http://localhost:5173), backendURL: back-end's url (e.g. http://localhost:5000)",
   "port": 5000, 
-  "frontendURL": "http://localhost:5173",
-  "backendURL": "http://localhost:5000"
+  "frontendURL": "https://www.wirecracker.com",
+  "backendURL": "https://www.wirecracker.com"
 }
