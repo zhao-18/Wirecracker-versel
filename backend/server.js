@@ -6,6 +6,8 @@ import apiRoutes from './apiRoutes.js';
 import oauthRoutes from './oauth.js';
 import config from "../config.json" assert { type: 'json' };
 
+console.log(config)
+
 dotenv.config();
 
 const app = express();
