@@ -50,6 +50,4 @@ app.post('/send-verification-email', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on ${backendURL}:${PORT}`);
-});
+export default app
