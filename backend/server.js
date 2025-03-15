@@ -4,9 +4,7 @@ import cors from 'cors';
 import { Resend } from 'resend';
 import apiRoutes from './apiRoutes.js';
 import oauthRoutes from './oauth.js';
-import config from "../config.json" assert { type: 'json' };
-
-console.log(config)
+import config from "../config.json" with { type: 'json' };
 
 dotenv.config();
 
