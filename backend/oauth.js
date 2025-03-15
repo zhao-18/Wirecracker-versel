@@ -16,6 +16,8 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY
 
 const frontendURL = config.frontendURL;
 
+console.log(config)
+
 // Session Middleware
 router.use(
   session({
