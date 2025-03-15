@@ -50,4 +50,4 @@ app.post('/send-verification-email', async (req, res) => {
     }
 });
 
-export default app
+export default app;
