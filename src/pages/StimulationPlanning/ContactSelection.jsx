@@ -370,7 +370,7 @@ const PlanningPane = ({ state, electrodes, contacts, onDrop, onDropBack, submitF
 
         // Create a new tab with the designation data
         const event = new CustomEvent('addFunctionalTestTab', {
-            detail: { contacts: functionalTestData, tests: {} }
+            detail: { data: {contacts: functionalTestData, tests: {}} }
         });
         window.dispatchEvent(event);
     };
