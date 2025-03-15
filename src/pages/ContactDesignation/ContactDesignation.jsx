@@ -3,8 +3,11 @@ import { useState, useEffect } from "react";
 import Resection from "./ResectionPage";
 import Designation from "./DesignationPage";
 import { saveDesignationCSVFile } from "../../utils/CSVParser";
+import config from "../../../config.json" with { type: 'json' };
 
 const PAGE_NAME = ["designation", "resection"];
+
+const backendURL = config.backendURL;
 
 const ContactDesignation = ({ initialData = {}, onStateChange, savedState = {} }) => {
     const [state, setState] = useState(savedState);
@@ -143,7 +146,7 @@ const ContactDesignation = ({ initialData = {}, onStateChange, savedState = {} }
                 
                 try {
                     // First save/update file metadata
-                    const response = await fetch('https://wirecracker-versel.vercel.app/api/save-designation', {
+                    const response = await fetch(`${backendURL}/api/save-designation`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',

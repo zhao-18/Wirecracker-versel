@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { parseCSVFile, saveCSVFile, Identifiers } from "../utils/CSVParser.js";
+import config from "../../config.json" with { type: 'json' };
+
+const backendURL = config.backendURL;
 
 // Function to flatten nested objects for "LOCALIZATION"
 const flattenData = (nestedData) => {
@@ -36,7 +39,7 @@ const Debug = () => {
     const [error, setError] = useState("");
 
     useEffect(() => {
-        fetch("https://wirecracker-versel.vercel.app/api/tables")
+        fetch(`${backendURL}/api/tables`)
             .then(response => response.json())
             .then(data => {
                 setTables(data.tables);

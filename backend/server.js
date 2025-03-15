@@ -4,15 +4,19 @@ import cors from 'cors';
 import { Resend } from 'resend';
 import apiRoutes from './apiRoutes.js';
 import oauthRoutes from './oauth.js';
+import config from "../config.json" assert { type: 'json' };
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = config.PORT || 5000;
+
+const frontendURL = config.frontendURL;
+const backendURL = config.backendURL;
 
 // Configure CORS with specific options
 app.use(cors({
-    origin: 'https://wirecracker-versel.vercel.app', // Your frontend URL
+    origin: frontendURL, // Your frontend URL
     credentials: true, // Allow credentials
     methods: ['GET', 'POST'], // Allowed methods
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -46,4 +50,6 @@ app.post('/send-verification-email', async (req, res) => {
     }
 });
 
-export default app;
+app.listen(PORT, () => {
+    console.log(`Server running on ${backendURL}:${PORT}`);
+});

@@ -14,6 +14,9 @@ import Localization from './pages/Localization';
 import ContactDesignation from './pages/ContactDesignation/ContactDesignation';
 import { supabase } from './utils/supabaseClient';
 import { FcGoogle } from 'react-icons/fc';
+import config from '../config.json' with { type: 'json' };
+
+const backendURL = config.backendURL;
 
 const Tab = ({ title, isActive, onClick, onClose, onRename }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -948,7 +951,7 @@ const Logo = () => {
 
 export const GoogleSignInButton = () => {
     const handleGoogleSignIn = () => {
-        window.location.href = "https://wirecracker-versel.vercel.app/auth/google";
+        window.location.href = `${backendURL}/auth/google`;
     };
 
     return (

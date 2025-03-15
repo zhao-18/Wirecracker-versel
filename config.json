@@ -1,9 +1,6 @@
 {
-  "db_name": "test_db",
-  "db_user": "test_user",
-  "db_pass": "test_password",
-  "pg_admin": "postgres",
-  "host": "localhost",
-  "port": 5432,
-  "data_dir": "data/sample/"
+  "_comment": "port: backend port, frontendURL: front-end's url (e.g. http://localhost:5173), backendURL: back-end's url (e.g. http://localhost:5000)",
+  "port": 5000, 
+  "frontendURL": "http://localhost:5173",
+  "backendURL": "http://localhost:5000"
 }

@@ -6,12 +6,15 @@ import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
+import config from "../config.json" assert { type: 'json' };
 
 dotenv.config();
 
 const router = express.Router();
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+const frontendURL = config.frontendURL;
 
 // Session Middleware
 router.use(
@@ -102,10 +105,10 @@ router.get("/auth/google", (req, res, next) => {
 // Google Auth Callback
 router.get(
     "/auth/google/callback",
-    passport.authenticate("google", { failureRedirect: "https://wirecracker-versel.vercel.app/" }),
+    passport.authenticate("google", { failureRedirect: frontendURL }),
     (req, res) => {
         const redirectPath = req.query.state || '/';
-        res.redirect(`https://wirecracker-versel.vercel.app/auth-success?token=${req.user.token}&redirect=${redirectPath}`);
+        res.redirect(`${frontendURL}/auth-success?token=${req.user.token}&redirect=${redirectPath}`);
     }
 );
 

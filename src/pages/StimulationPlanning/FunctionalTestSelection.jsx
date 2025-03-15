@@ -9,8 +9,6 @@ const FunctionalTestSelection = ({
 }) => {
     const allAvailableTests = demoTestData;
 
-    console.log(initialData)
-
     const [contacts, setContacts] = useState(
         savedState.contacts || initialData.data.contacts || demoContactsData
     );

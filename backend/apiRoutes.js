@@ -291,13 +291,38 @@ async function insertRegionsAndGetIds(regions) {
       throw fetchError;
     }
 
-    // Add existing regions to the map
+    // Create a map of lowercase names to their database versions and IDs
+    const existingNamesMap = new Map();
     existingRegions.forEach(region => {
-      regionIdMap[region.name] = region.id;
+      const lowerName = region.name.toLowerCase();
+      existingNamesMap.set(lowerName, {
+        id: region.id,
+        name: region.name
+      });
     });
 
-    // Filter out regions that already exist
-    const newRegions = regions.filter(region => region && !regionIdMap[region]);
+    // Filter out regions that already exist (case-insensitive)
+    const newRegionsSet = new Set();
+    const newRegions = regions.filter(region => {
+      if (!region) return false;
+      const lowerRegion = region.toLowerCase();
+      
+      // If this region (case-insensitive) already exists
+      if (existingNamesMap.has(lowerRegion)) {
+        // Use the existing version from the database
+        const existing = existingNamesMap.get(lowerRegion);
+        regionIdMap[existing.name] = existing.id; // Only map the database version
+        return false;
+      }
+      
+      // If we haven't seen this region (case-insensitive) in this batch
+      if (!newRegionsSet.has(lowerRegion)) {
+        newRegionsSet.add(lowerRegion);
+        return true;
+      }
+      
+      return false;
+    });
 
     if (newRegions.length > 0) {
       console.log(`Inserting ${newRegions.length} new regions:`, newRegions);

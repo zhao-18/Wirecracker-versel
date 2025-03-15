@@ -4,6 +4,9 @@ import { Container, Button, darkColors, lightColors } from 'react-floating-actio
 import 'reactjs-popup/dist/index.css';
 import { saveCSVFile, Identifiers } from '../utils/CSVParser.js';
 import { supabase } from '../utils/supabaseClient';
+import config from "../../config.json" with { type: 'json' };
+
+const backendURL = config.backendURL;
 
 const Localization = ({ initialData = {}, onStateChange, savedState = {} }) => {
     const [expandedElectrode, setExpandedElectrode] = useState(savedState.expandedElectrode || '');
@@ -179,7 +182,7 @@ const Localization = ({ initialData = {}, onStateChange, savedState = {} }) => {
             console.log('Sending data to backend:', dataToSend);
             
             // Save localization data with file ID
-            const response = await fetch('https://wirecracker-versel.vercel.app/api/save-localization', {
+            const response = await fetch(`${backendURL}/api/save-localization`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -240,6 +243,25 @@ const Localization = ({ initialData = {}, onStateChange, savedState = {} }) => {
     }) => {
         const contactData = electrodes[label][number];
         const associatedLocation = contactData.associatedLocation;
+        const [selectedValue, setSelectedValue] = useState(associatedLocation);
+        const [desc1, setDesc1] = useState(contactData.contactDescription?.split('+')[0] || '');
+        const [desc2, setDesc2] = useState(contactData.contactDescription?.split('+')[1] || '');
+        const [regionNames, setRegionNames] = useState([]);
+        const [desc1Filter, setDesc1Filter] = useState('');
+        const [desc2Filter, setDesc2Filter] = useState('');
+
+        useEffect(() => {
+            // Fetch region names when component mounts
+            fetch('http://localhost:5000/api/tables/region_name')
+                .then(response => response.json())
+                .then(data => {
+                    // Extract unique region names
+                    setRegionNames(data.map(region => region.name));
+                })
+                .catch(error => {
+                    console.error('Error fetching region names:', error);
+                });
+        }, []);
 
         let displayText = associatedLocation;
 
@@ -248,9 +270,44 @@ const Localization = ({ initialData = {}, onStateChange, savedState = {} }) => {
         } else if (associatedLocation === 'GM/WM') {
             displayText = `${contactData.contactDescription}/WM`;
         } else if (associatedLocation === 'GM/GM') {
-            const [desc1, desc2] = contactData.contactDescription.split('+');
-            displayText = `${desc1}/${desc2}`;
+            const [d1, d2] = contactData.contactDescription?.split('+') || ['', ''];
+            displayText = `${d1}/${d2}`;
         }
+
+        // Function to get existing region name if it exists (case-insensitive)
+        const getExistingRegion = (input) => {
+            const lowerInput = input.toLowerCase();
+            return regionNames.find(name => name.toLowerCase() === lowerInput);
+        };
+
+        const handleSubmit = (event) => {
+            event.preventDefault();
+            let temp = { ...electrodes };
+            
+            if (selectedValue === 'GM/GM') {
+                const existingDesc1 = getExistingRegion(desc1) || desc1;
+                const existingDesc2 = getExistingRegion(desc2) || desc2;
+                temp[label][number].contactDescription = `${existingDesc1}+${existingDesc2}`;
+            } else if (selectedValue === 'GM' || selectedValue === 'GM/WM') {
+                const existingDesc1 = getExistingRegion(desc1) || desc1;
+                temp[label][number].contactDescription = existingDesc1;
+            }
+            
+            temp[label][number].associatedLocation = selectedValue;
+            setElectrodes(temp);
+            setModifiedDate(new Date().toISOString());
+            setSubmitFlag(!submitFlag);
+            close();
+        };
+
+        // Filter region names based on input, case-insensitive
+        const filteredRegions1 = desc1Filter
+            ? regionNames.filter(name => name.toLowerCase().includes(desc1Filter.toLowerCase()))
+            : regionNames;
+
+        const filteredRegions2 = desc2Filter
+            ? regionNames.filter(name => name.toLowerCase().includes(desc2Filter.toLowerCase()))
+            : regionNames;
 
         return (
             <Popup
@@ -262,33 +319,109 @@ const Localization = ({ initialData = {}, onStateChange, savedState = {} }) => {
                 </button>}
                 contentStyle={{ width: "500px" }}
                 modal
-                nested>
+                nested
+            >
                 {close => (
                     <div className="modal bg-white p-6 rounded-lg shadow-lg">
                         <h4 className="text-lg font-semibold mb-4">Add Contact</h4>
-                        <select
-                            className="w-full p-2 border border-gray-300 rounded-md mb-4"
-                            onChange={(event) => {
-                                let temp = { ...electrodes };
-                                temp[label][number].associatedLocation = event.target.value;
-                                setElectrodes(temp);
-                                setModifiedDate(new Date().toISOString());
-                            }}>
-                            <option></option>
-                            {contactTypes.map((option, i) => {
-                                return (
-                                    <option key={i}>{option}</option>
-                                );
-                            })}
-                        </select>
-                        <button
-                            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-200"
-                            onClick={() => {
-                                setSubmitFlag(!submitFlag);
-                                close();
-                            }}>
-                            Done
-                        </button>
+                        <form onSubmit={handleSubmit}>
+                            <select
+                                className="w-full p-2 border border-gray-300 rounded-md mb-4"
+                                value={selectedValue}
+                                onChange={(e) => setSelectedValue(e.target.value)}
+                            >
+                                <option value="">Select tissue type</option>
+                                {contactTypes.map((option, i) => {
+                                    return (
+                                        <option key={i} value={option}>{option}</option>
+                                    );
+                                })}
+                            </select>
+
+                            {(selectedValue === 'GM' || selectedValue === 'GM/WM') && (
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Contact Description
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            className="w-full p-2 border border-gray-300 rounded-md"
+                                            value={desc1}
+                                            onChange={(e) => {
+                                                setDesc1(e.target.value);
+                                                setDesc1Filter(e.target.value);
+                                            }}
+                                            placeholder="Enter or select description"
+                                            list="regions1"
+                                        />
+                                        <datalist id="regions1">
+                                            {filteredRegions1.map((name, index) => (
+                                                <option key={index} value={name} />
+                                            ))}
+                                        </datalist>
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedValue === 'GM/GM' && (
+                                <>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            First Description
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 border border-gray-300 rounded-md"
+                                                value={desc1}
+                                                onChange={(e) => {
+                                                    setDesc1(e.target.value);
+                                                    setDesc1Filter(e.target.value);
+                                                }}
+                                                placeholder="Enter or select first description"
+                                                list="regions1"
+                                            />
+                                            <datalist id="regions1">
+                                                {filteredRegions1.map((name, index) => (
+                                                    <option key={index} value={name} />
+                                                ))}
+                                            </datalist>
+                                        </div>
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            Second Description
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 border border-gray-300 rounded-md"
+                                                value={desc2}
+                                                onChange={(e) => {
+                                                    setDesc2(e.target.value);
+                                                    setDesc2Filter(e.target.value);
+                                                }}
+                                                placeholder="Enter or select second description"
+                                                list="regions2"
+                                            />
+                                            <datalist id="regions2">
+                                                {filteredRegions2.map((name, index) => (
+                                                    <option key={index} value={name} />
+                                                ))}
+                                            </datalist>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
+                            <button
+                                type="submit"
+                                className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors duration-200"
+                            >
+                                Done
+                            </button>
+                        </form>
                     </div>
                 )}
             </Popup>
@@ -356,10 +489,16 @@ const Localization = ({ initialData = {}, onStateChange, savedState = {} }) => {
                             <div>Modified: {new Date(modifiedDate).toLocaleString()}</div>
                         </div>
                         <button
-                            className="w-40 bg-sky-700 text-white font-semibold rounded p-2"
+                            className="w-40 bg-sky-700 hover:bg-sky-800 text-white font-semibold rounded p-2"
+                            onClick={() => handleSaveLocalization(false)}
+                        >
+                            Save
+                        </button>
+                        <button
+                            className="w-40 bg-green-500 hover:bg-green-600 text-white font-semibold rounded p-2"
                             onClick={() => handleSaveLocalization(true)}
                         >
-                            Save Localization
+                            Export
                         </button>
                     </div>
                 </div>

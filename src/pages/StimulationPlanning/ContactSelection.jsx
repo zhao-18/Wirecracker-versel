@@ -5,7 +5,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Container, Button, darkColors, lightColors } from 'react-floating-action-button';
 import { saveStimulationCSVFile } from "../../utils/CSVParser";
-// Testing!!!!
+
 const ContactSelection = ({ initialData = {}, onStateChange, savedState = {}, isFunctionalMapping = false }) => {
     const [electrodes, setElectrodes] = useState(savedState.electrodes || initialData.data || demoContactData)
     const [planningContacts, setPlanningContacts] = useState(() => {
@@ -370,7 +370,7 @@ const PlanningPane = ({ state, electrodes, contacts, onDrop, onDropBack, submitF
 
         // Create a new tab with the designation data
         const event = new CustomEvent('addFunctionalTestTab', {
-            detail: { data: {contacts: functionalTestData, tests: {}} }
+            detail: { data: { contacts: functionalTestData, tests: {} } }
         });
         window.dispatchEvent(event);
     };
@@ -420,6 +420,7 @@ const PlanningPane = ({ state, electrodes, contacts, onDrop, onDropBack, submitF
 
 // Draggable contact in planning pane area
 const PlanningContact = ({ contact, onDropBack, onStateChange, savedState, setElectrodes }) => {
+    console.log(contact)
     // To persist between tab switch and reload
     const [frequency, setFrequency] = useState(savedState.frequency?.[contact.id] || contact.frequency || 0);
     const [duration, setDuration] = useState(savedState.duration?.[contact.id] || contact.duration || 0);

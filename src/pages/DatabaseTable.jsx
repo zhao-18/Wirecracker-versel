@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import config from "../../config.json" with { type: 'json' };
+
+const backendURL = config.backendURL;
 
 const DatabaseTable = () => {
     const { table } = useParams();
@@ -7,7 +10,7 @@ const DatabaseTable = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch(`https://wirecracker-versel.vercel.app/api/tables/${table}`)
+        fetch(`${backendURL}:5000/api/tables/${table}`)
             .then(response => response.json())
             .then(data => {
                 setData(data);

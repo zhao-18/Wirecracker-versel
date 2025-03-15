@@ -2,11 +2,13 @@ import { supabase } from './utils/supabaseClient';
 import bcrypt from 'bcryptjs';
 //import { sendVerificationEmail } from './utils/emailService';
 import { v4 as uuidv4 } from 'uuid';
+import config from '../config.json' with { type: 'json' };
 
+const backendURL = config.backendURL;
 
 export async function sendVerificationEmail(email, code) {
     try {
-        const response = await fetch('https://wirecracker-versel.vercel.app/send-verification-email', {
+        const response = await fetch(`${backendURL}/send-verification-email`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, code }),
