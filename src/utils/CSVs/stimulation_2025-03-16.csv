@@ -1,0 +1,7 @@
+### THIS CSV IS INTENDED TO BE USED AT WIRECRACKER.COM FOR CCEPS / SEIZURE RECREATION PLANNING ###
+### THESE TWO LINES SERVES AS IDENTIFIER. DO NOT DELETE ###
+Label,ContactNumber,ElectrodeDescription,ContactDescription,AssociatedLocation,Mark,SurgeonMark,Pair,IsPlanning,Frequency,Duration,Current,PlanOrder
+A',1,Left Amygdala,Left Amygdala,Left Amygdala,0,false,2,false,105.225,3,2.445,-1
+A',2,Left Amygdala,Left Amygdala+Right Anterior,Left Amygdala/Right Anterior,1,false,1,true,105.225,3,2.445,0
+A',3,Left Amygdala,Left MFG,Left MFG,1,false,2,false,105.225,3,2.445,-1
+A',4,Left Amygdala,Left MFG,Left MFG,0,false,3,false,105.225,3,2.445,-1

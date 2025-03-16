@@ -1,0 +1,5 @@
+### THIS CSV IS INTENDED TO BE USED AT WIRECRACKER.COM FOR TEST PLANNING ###
+### THESE TWO LINES SERVES AS IDENTIFIER. DO NOT DELETE ###
+Label,ContactNumber,ElectrodeDescription,ContactDescription,AssociatedLocation,Mark,SurgeonMark,Pair,Frequency,Duration,Current,TestID
+D',6,,,WM,2,false,5,105.225,3,2.445,309
+U',5,,,WM,1,false,4,105.225,3,2.445,309

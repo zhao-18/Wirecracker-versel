@@ -1,0 +1,33 @@
+### THIS CSV IS INTENDED TO BE USED AT WIRECRACKER.COM FOR CCEPS / SEIZURE RECREATION PLANNING ###
+### THESE TWO LINES SERVES AS IDENTIFIER. DO NOT DELETE ###
+Label,ContactNumber,ElectrodeDescription,ContactDescription,AssociatedLocation,Mark,SurgeonMark,Pair,IsPlanning,Frequency,Duration,Current,PlanOrder
+D',1,,,Left Entorhinal,0,false,2,false,105.225,3,2.445,-1
+D',2,,,Left Entorhinal,0,false,1,false,105.225,3,2.445,-1
+D',3,,,Left Entorhinal,0,false,2,false,105.225,3,2.445,-1
+D',4,,,WM,1,false,5,false,105.225,3,2.445,-1
+D',5,,,WM,1,false,6,false,105.225,3,2.445,-1
+D',6,,,WM,1,false,6,true,105.225,3,2.445,0
+D',7,,,Left MFG,0,false,7,false,105.225,3,2.445,-1
+D',8,,,Left MFG,0,false,7,false,105.225,3,2.445,-1
+D',9,,,Left MFG,0,false,8,false,105.225,3,2.445,-1
+D',10,,,Left MFG,0,false,9,false,105.225,3,2.445,-1
+D',11,,,Left MFG,0,false,10,false,105.225,3,2.445,-1,U',1,,,L SMG/WM,0,false,2,false,105.225,3,2.445,-1
+U',2,,,L SMG/WM,0,false,1,false,105.225,3,2.445,-1
+U',3,,,WM,0,false,2,false,105.225,3,2.445,-1
+U',4,,,WM,1,false,3,false,105.225,3,2.445,-1
+U',5,,,WM,1,false,4,true,105.225,3,2.445,1
+U',6,,,L SMG/L Hippocampus,0,false,5,false,105.225,3,2.445,-1
+U',7,,,L SMG/L Hippocampus,0,false,6,false,105.225,3,2.445,-1
+U',8,,,OOB,0,false,7,false,105.225,3,2.445,-1,A',1,,,Left MFG,0,false,2,false,105.225,3,2.445,-1
+A',2,,,Left MFG,0,false,1,false,105.225,3,2.445,-1
+A',3,,,Left MFG/WM,0,false,2,false,105.225,3,2.445,-1
+A',4,,,WM,0,false,3,false,105.225,3,2.445,-1
+A',5,,,WM,0,false,4,false,105.225,3,2.445,-1
+A',6,,,OOB,0,false,5,false,105.225,3,2.445,-1,B',1,,,Left Amygdala,0,false,2,false,105.225,3,2.445,-1
+B',2,,,Left Amygdala,0,false,1,false,105.225,3,2.445,-1
+B',3,,,Left Amygdala/WM,0,false,2,false,105.225,3,2.445,-1
+B',4,,,WM,0,false,3,false,105.225,3,2.445,-1
+B',5,,,WM,0,false,4,false,105.225,3,2.445,-1
+B',6,,,OOB,0,false,5,false,105.225,3,2.445,-1
+B',7,,,OOB,0,false,6,false,105.225,3,2.445,-1
+B',8,,,OOB,0,false,7,false,105.225,3,2.445,-1

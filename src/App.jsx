@@ -231,21 +231,8 @@ const FileUtils = {
                     .eq('file_id', file.file_id)
                     .single();
                     
-                if (designationError) {
+                if (designationError && designationError.code !== 'PGRST116') {
                     console.error('Error checking designation data:', designationError);
-                    
-                    // If no data found in either table, create new empty localization
-                    console.log('Creating new tab with empty data for:', file.filename);
-                    openSavedFile('localization', { 
-                        name: file.filename || 'Unnamed Localization',
-                        fileId: file.file_id,
-                        fileName: file.filename,
-                        creationDate: file.creation_date,
-                        modifiedDate: file.modified_date,
-                        data: { data: {} }
-                    });
-                    
-                    return;
                 }
                 
                 if (designationData) {
@@ -262,6 +249,76 @@ const FileUtils = {
                     });
                     return;
                 }
+
+                // Check if this is a test selection file
+                console.log('Checking for test selection data...');
+                const { data: testSelectionData, error: testSelectionError } = await supabase
+                    .from('test_selection')
+                    .select('*')
+                    .eq('file_id', file.file_id)
+                    .single();
+
+                if (testSelectionError && testSelectionError.code !== 'PGRST116') {
+                    console.error('Error checking test selection data:', testSelectionError);
+                }
+
+                if (testSelectionData) {
+                    console.log('Found test selection data:', testSelectionData);
+                    openSavedFile('csv-functional-test', {
+                        name: file.filename || 'Unnamed Test Selection',
+                        fileId: file.file_id,
+                        fileName: file.filename,
+                        creationDate: file.creation_date,
+                        modifiedDate: file.modified_date,
+                        data: {
+                            tests: testSelectionData.tests,
+                            contacts: testSelectionData.contacts
+                        }
+                    });
+                    return;
+                }
+
+                // Check if this is a stimulation file
+                console.log('Checking for stimulation data...');
+                const { data: stimulationData, error: stimulationError } = await supabase
+                    .from('stimulation')
+                    .select('*')
+                    .eq('file_id', file.file_id)
+                    .single();
+
+                if (stimulationError && stimulationError.code !== 'PGRST116') {
+                    console.error('Error checking stimulation data:', stimulationError);
+                }
+
+                if (stimulationData) {
+                    console.log('Found stimulation data:', stimulationData);
+                    // Open in appropriate stimulation view based on is_mapping flag
+                    openSavedFile(stimulationData.is_mapping ? 'csv-functional-mapping' : 'csv-stimulation', {
+                        name: file.filename || 'Unnamed Stimulation',
+                        fileId: file.file_id,
+                        fileName: file.filename,
+                        creationDate: file.creation_date,
+                        modifiedDate: file.modified_date,
+                        data: {
+                            data: stimulationData.stimulation_data,
+                            planOrder: stimulationData.plan_order
+                        }
+                    });
+                    return;
+                }
+                
+                // If no data found in any table, create new empty localization
+                console.log('Creating new tab with empty data for:', file.filename);
+                openSavedFile('localization', { 
+                    name: file.filename || 'Unnamed Localization',
+                    fileId: file.file_id,
+                    fileName: file.filename,
+                    creationDate: file.creation_date,
+                    modifiedDate: file.modified_date,
+                    data: { data: {} }
+                });
+                
+                return;
             }
             
             // If we found localization data, proceed with loading it
@@ -575,12 +632,59 @@ const HomePage = () => {
                     fileName: fileData.name,
                     creationDate: fileData.creationDate || new Date().toISOString(),
                     modifiedDate: fileData.modifiedDate || new Date().toISOString(),
-                    electrodes: fileData.data.data,
+                    electrodes: fileData.data,
                     localizationData: fileData.originalData
                 }
             };
 
             console.log('Created new tab with state:', newTab.state);
+
+            setTabs([...tabs, newTab]);
+            setActiveTab(newTab.id);
+        }
+        else if (type === 'csv-functional-test') {
+            console.log('Opening saved test selection file:', fileData);
+
+            const newTab = {
+                id: Date.now().toString(),
+                title: fileData.name,
+                content: type,
+                data: fileData.data,
+                state: {
+                    fileId: fileData.fileId,
+                    fileName: fileData.name,
+                    creationDate: fileData.creationDate || new Date().toISOString(),
+                    modifiedDate: fileData.modifiedDate || new Date().toISOString(),
+                    tests: fileData.data.tests,
+                    contacts: fileData.data.contacts
+                }
+            };
+
+            console.log('Created new test selection tab with state:', newTab.state);
+
+            setTabs([...tabs, newTab]);
+            setActiveTab(newTab.id);
+        }
+        else if (type === 'csv-stimulation' || type === 'csv-functional-mapping') {
+            console.log('Opening saved stimulation file:', fileData);
+
+            const newTab = {
+                id: Date.now().toString(),
+                title: fileData.name,
+                content: type,
+                data: fileData.data,
+                state: {
+                    fileId: fileData.fileId,
+                    fileName: fileData.name,
+                    creationDate: fileData.creationDate || new Date().toISOString(),
+                    modifiedDate: fileData.modifiedDate || new Date().toISOString(),
+                    electrodes: fileData.data.data,
+                    planOrder: fileData.data.planOrder,
+                    isFunctionalMapping: type === 'csv-functional-mapping'
+                }
+            };
+
+            console.log('Created new stimulation tab with state:', newTab.state);
 
             setTabs([...tabs, newTab]);
             setActiveTab(newTab.id);
@@ -881,7 +985,7 @@ const Right = ({ onOpenFile }) => {
         const fetchRecentFiles = async () => {
             setIsLoading(true);
             const files = await FileUtils.fetchUserFiles();
-            setRecentLocalizations(files.slice(0, 5)); // Limit to 5 most recent
+            setRecentLocalizations(files.slice(0, 7)); // Limit to 7 most recent
             setIsLoading(false);
         };
         
@@ -907,7 +1011,7 @@ const Right = ({ onOpenFile }) => {
     
     return (
         <div className="basis-80 justify-center">
-            <h3 className="text-4xl font-bold">Recent Localizations</h3>
+            <h3 className="text-4xl font-bold">Recent Files</h3>
             <div className="mb-5">
                 {isLoading ? (
                     <div className="text-gray-500">Loading...</div>
@@ -932,10 +1036,6 @@ const Right = ({ onOpenFile }) => {
                 ) : (
                     <div className="text-gray-500">No files available</div>
                 )}
-            </div>
-            <h3 className="text-4xl font-bold">Recent Stimulation Plans</h3>
-            <div className="mb-5">
-                <div className="text-gray-500">No files available</div>
             </div>
         </div>
     );

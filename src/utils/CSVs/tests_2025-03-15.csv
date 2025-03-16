@@ -1,0 +1,5 @@
+### THIS CSV IS INTENDED TO BE USED AT WIRECRACKER.COM FOR TEST PLANNING ###
+### THESE TWO LINES SERVES AS IDENTIFIER. DO NOT DELETE ###
+Label,ContactNumber,ElectrodeDescription,ContactDescription,AssociatedLocation,Mark,SurgeonMark,Pair,Frequency,Duration,Current,TestID
+U',6,,,L SMG/L Hippocampus,0,false,5,105.225,3,2.445,
+D',6,,,WM,1,false,5,105.225,3,2.445,309

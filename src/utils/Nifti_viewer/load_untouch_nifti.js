@@ -197,72 +197,33 @@ function read_image ( hdr, filetype, machine,
     //  1536 Long double, float128  (Unsupported, bitpix=128) % DT_FLOAT128, NIFTI_TYPE_FLOAT128
     //  1792 Complex128, 2 float64  (Use float64, bitpix=128) % DT_COMPLEX128, NIFTI_TYPE_COMPLEX128
     //  2048 Complex256, 2 float128 (Unsupported, bitpix=256) % DT_COMPLEX128, NIFTI_TYPE_COMPLEX128
-    let precision;
-    switch ( hdr.dime.datatype ) {
-        case    2:
-            hdr.dime.bitpix = 8;  precision = 'uint8';
-            break;
-        case    4:
-            hdr.dime.bitpix = 16; precision = 'int16';
-            break;
-        case    8:
-            hdr.dime.bitpix = 32; precision = 'int32';
-            break;
-        case   16:
-            hdr.dime.bitpix = 32; precision = 'float32';
-            break;
-        case   32:
-            hdr.dime.bitpix = 64; precision = 'float32';
-            break;
-        case   64:
-            hdr.dime.bitpix = 64; precision = 'float64';
-            break;
-        case  128:
-            hdr.dime.bitpix = 24; precision = 'uint8';
-            break;
-        case  256:
-            hdr.dime.bitpix = 8;  precision = 'int8';
-            break;
-        case  511:
-            hdr.dime.bitpix = 96; precision = 'float32';
-            break;
-        case  512:
-            hdr.dime.bitpix = 16; precision = 'uint16';
-            break;
-        case  768:
-            hdr.dime.bitpix = 32; precision = 'uint32';
-            break;
-        case 1024:
-            hdr.dime.bitpix = 64; precision = 'int64';
-            break;
-        case 1280:
-            hdr.dime.bitpix = 64; precision = 'uint64';
-            break;
-        case 1792:
-            hdr.dime.bitpix = 128; precision = 'float64';
-            break;
-        default:
-            throw 'This datatype is not supported';
-    }
-
-    for (let index = 1; index < hdr.dime.dim.length; ++index) {
-        if ( hdr.dime.dim[index] < 1 )
-        {
-            hdr.dime.dim[index] = 1;
-        }
-    }
-
-    //  move pointer to the start of image block
-    switch ( filetype )
+    const datatypeMap =
     {
-        case 0:
-        case 1:
-            fid.fseek(0, 'bof');
-            break;
-        case 2:
-            fid.fseek(hdr.dime.vox_offset, 'bof');
-            break;
-    }
+        2:    { bitpix: 8,  precision: 'uint8'   },
+        4:    { bitpix: 16, precision: 'int16'   },
+        8:    { bitpix: 32, precision: 'int32'   },
+        16:   { bitpix: 32, precision: 'float32' },
+        64:   { bitpix: 64, precision: 'float64' },
+        128:  { bitpix: 24, precision: 'uint8'   },
+        256:  { bitpix: 8,  precision: 'int8'    },
+        511:  { bitpix: 96, precision: 'float32' },
+        512:  { bitpix: 16, precision: 'uint16'  },
+        768:  { bitpix: 32, precision: 'uint32'  },
+        1024: { bitpix: 64, precision: 'int64'   },
+        1280: { bitpix: 64, precision: 'uint64'  },
+    };
+
+    const datatypeInfo = datatypeMap[hdr.dime.datatype];
+    if (!datatypeInfo) throw 'This datatype is not supported';
+    hdr.dime.bitpix = datatypeInfo.bitpix;
+    const precision = datatypeInfo.precision;
+
+    // Normalize dimensions
+    hdr.dime.dim = hdr.dime.dim.map((dim, index) => index === 0 ? dim : Math.max(dim, 1));
+
+    // Move pointer to the start of image block
+    if (filetype === 2) fid.fseek(hdr.dime.vox_offset, 'bof');
+    else fid.fseek(0, 'bof');
 
     //  Load whole image block for old Analyze format or binary image;
     //  otherwise, load images that are specified in img_idx, dim5_idx,
@@ -270,299 +231,89 @@ function read_image ( hdr, filetype, machine,
     //
     //  For binary image, we have to read all because pos can not be
     //  seeked in bit and can not be calculated the way below.
-    let img_siz;
-    if ( hdr.dime.datatype == 1 ||
-        isequal(hdr.dime.dim.slice(3, 8), [1,1,1,1,1]) ||
-        (
-            img_idx.length == 0 &&
-            dim5_idx.length == 0 &&
-            dim6_idx.length == 0 &&
-            dim7_idx.length == 0 &&
-            slice_idx.length == 0
-        )
-    )
+
+    //  For each frame, precision of value will be read
+    //  in img_siz times, where img_siz is only the
+    //  dimension size of an image, not the byte storage
+    //  size of an image.
+    let img_siz = prod(hdr.dime.dim.slice(1, 8));
+    if ([128, 511].includes(hdr.dime.datatype)) img_siz *= 3; // RGB types
+
+    // Load image data
+    if (hdr.dime.datatype === 1 || isequal(hdr.dime.dim.slice(4, 8), [1, 1, 1, 1]) ||
+        [img_idx, dim5_idx, dim6_idx, dim7_idx].every(arr => arr.length === 0))
     {
-        //  For each frame, precision of value will be read
-        //  in img_siz times, where img_siz is only the
-        //  dimension size of an image, not the byte storage
-        //  size of an image.
-        img_siz = prod(hdr.dime.dim.slice(1,8));
-
-        //  For complex float32 or complex float64, voxel values
-        //  include [real, imag]
-        if ( hdr.dime.datatype == 32 || hdr.dime.datatype == 1792 )
-        {
-            img_siz = img_siz * 2;
-        }
-
-        // MPH: For RGB24, voxel values include 3 separate color planes
-        if ( hdr.dime.datatype == 128 || hdr.dime.datatype == 511 )
-        {
-            img_siz = img_siz * 3;
-        }
-
         img = fid.fread(img_siz, precision);
-
-        let d3 = hdr.dime.dim[3];
-        let d4 = hdr.dime.dim[4];
-        let d5 = hdr.dime.dim[5];
-        let d6 = hdr.dime.dim[6];
-        let d7 = hdr.dime.dim[7];
-
-        if ( slice_idx.length == 0 )
-            slice_idx = Array.from(Array(d3).keys());
-
-        if ( img_idx.length == 0 )
-            img_idx = Array.from(Array(d4).keys());
-
-        if ( dim5_idx.length == 0 )
-            dim5_idx = Array.from(Array(d5).keys());
-
-        if ( dim6_idx.length == 0 )
-            dim6_idx = Array.from(Array(d6).keys());
-
-        if ( dim7_idx.length == 0 )
-            dim7_idx = Array.from(Array(d7).keys());
+        [img_idx, dim5_idx, dim6_idx, dim7_idx] = [img_idx, dim5_idx, dim6_idx, dim7_idx].map((arr, i) =>
+            arr.length ? arr : Array.from(Array(hdr.dime.dim[i + 4]).keys()));
     }
     else
     {
-        let d1 = hdr.dime.dim[1];
-        let d2 = hdr.dime.dim[2];
-        let d3 = hdr.dime.dim[3];
-        let d4 = hdr.dime.dim[4];
-        let d5 = hdr.dime.dim[5];
-        let d6 = hdr.dime.dim[6];
-        let d7 = hdr.dime.dim[7];
-
-        if ( slice_idx.length == 0 )
-            slice_idx = Array.from(Array(d3).keys());
-
-        if ( img_idx.length == 0 )
-            img_idx = Array.from(Array(d4).keys());
-
-        if ( dim5_idx.length == 0 )
-            dim5_idx = Array.from(Array(d5).keys());
-
-        if ( dim6_idx.length == 0 )
-            dim6_idx = Array.from(Array(d6).keys());
-
-        if ( dim7_idx.length == 0 )
-            dim7_idx = Array.from(Array(d7).keys());
-
-        // ROMAN: begin
-        let roman = 1;
-        let currentIndex;
         img = [];
-        if ( roman )
+        let currentIndex = 0;
+        for (let i7 of dim7_idx)
         {
-            //  compute size of one slice
-            img_siz = hdr.dime.dim[1] * hdr.dime.dim[2];
-
-            //  For complex float32 or complex float64, voxel values
-            //  include [real, imag]
-            if ( hdr.dime.datatype == 32 | hdr.dime.datatype == 1792 )
+            for (let i6 of dim6_idx)
             {
-                img_siz = img_siz * 2;
-            }
-
-            //MPH: For RGB24, voxel values include 3 separate color planes
-            if ( hdr.dime.datatype == 128 | hdr.dime.datatype == 511 )
-            {
-                img_siz = img_siz * 3;
-            }
-
-            currentIndex = 0;
-        } // if(roman)
-        // ROMAN: end
-
-        for ( let i7 = 0; i7 < dim7_idx.length; i7++ )
-        {
-            for ( let i6 = 0; i6 < dim6_idx.length; i6++ )
-            {
-                for ( let i5 = 0; i5 < dim5_idx.length; i5++ )
+                for (let i5 of dim5_idx)
                 {
-                    for ( let t = 0; t < img_idx.length; t++ )
+                    for (let t of img_idx)
                     {
-                        for ( let s = 0; s < slice_idx.length; s++ )
-                        {
-                            //  Position is seeked in bytes. To convert dimension size
-                            //  to byte storage size, hdr.dime.bitpix/8 will be
-                            //  applied.
-
-                            let pos = sub2ind([d1, d2, d3, d4, d5, d6, d7], 1, 1,
-                                              slice_idx[s], img_idx[t],
-                                              dim5_idx[i5], dim6_idx[i6], dim7_idx[i7]);
-
-                            pos = pos * hdr.dime.bitpix / 8.0;
-
-                            // ROMAN: begin
-                            if ( roman )
-                            {
-                                // do nothing
-                            }
-                            else
-                            {
-                                img_siz = hdr.dime.dim[1] * hdr.dime.dim[2];
-
-                                //  For complex float32 or complex float64, voxel values
-                                //  include [real, imag]
-                                if ( hdr.dime.datatype == 32 || hdr.dime.datatype == 1792 )
-                                {
-                                    img_siz = img_siz * 2;
-                                }
-
-                                // MPH: For RGB24, voxel values include 3 separate color planes
-                                if ( hdr.dime.datatype == 128 || hdr.dime.datatype == 511 )
-                                {
-                                    img_siz = img_siz * 3;
-                                }
-                            } // if (roman)
-                            // ROMAN: end
-                            if ( filetype == 2 )
-                            {
-                                fid.fseek(pos + hdr.dime.vox_offset, 'bof');
-                            }
-                            else
-                            {
-                                fid.fseek(pos, 'bof');
-                            }
-
-                            //  For each frame, fread will read precision of value
-                            //  in img_siz times
-                            //
-                            // ROMAN: begin
-                            if ( roman )
-                            {
-                                img[currentIndex] = fid.fread(img_siz, precision);
-                                currentIndex = currentIndex + 1;
-                            }
-                            else
-                            {
-                                img.push(fid.fread(img_siz, precision));
-                            } //if(roman)
-                            // ROMAN: end
-                        }
+                        //  Position is seeked in bytes. To convert dimension size
+                        //  to byte storage size, hdr.dime.bitpix/8 will be
+                        //  applied.
+                        let pos = sub2ind(hdr.dime.dim.slice(1), 1, 1, 1, t, i5, i6, i7) * hdr.dime.bitpix / 8;
+                        if (filetype === 2) pos += hdr.dime.vox_offset;
+                        fid.fseek(pos, 'bof');
+                        img[currentIndex++] = fid.fread(img_siz, precision);
                     }
                 }
             }
         }
     }
 
-    //  For complex float32 or complex float64, voxel values
-    //  include [real, imag]
-    if ( hdr.dime.datatype == 32 || hdr.dime.datatype == 1792 )
+    //  Update the global min and max values
+    img.flat(Infinity);
+    for (let item of img)
     {
-        img = img.flat(Infinity);
-        img_tmp = reshape(img, [2, img.length/2]);
-        img = {};
-        img = img_tmp[0];
-        img.imaginary = img_tmp[1];
-
-        //  Update the global min and max values
-        hdr.dime.glmax.imaginary = img.imaginary[0];
-        hdr.dime.glmax.real = img[0];
-
-        hdr.dime.glmin.imaginary = img.imaginary[0];
-        hdr.dime.glmin.real = img[0];
-
-        for ( let i = 1; i < img.length; i++ )
+        if ( hdr.dime.glmax < item )
         {
-            if ( Math.hypot(hdr.dime.glmax.imaginary, hdr.dime.glmax.real) < Math.hypot(img.imaginary[i], img[i]) )
-            {
-                hdr.dime.glmax.imaginary = img.imaginary[i];
-                hdr.dime.glmax.real = img[i];
-            }
-            else if ( Math.hypot(hdr.dime.glmin.imaginary, hdr.dime.glmin.real) > Math.hypot(img.imaginary[i], img[i]) )
-            {
-                hdr.dime.glmin.imaginary = img.imaginary[i];
-                hdr.dime.glmin.real = img[i];
-            }
-            else if ( Math.hypot(hdr.dime.glmax.imaginary, hdr.dime.glmax.real) == Math.hypot(img.imaginary[i], img[i]) )
-            {
-                if ( Math.atan2(hdr.dime.glmax.imaginary, hdr.dime.glmax.real) < Math.atan2(img.imaginary[i], img[i]) )
-                {
-                    hdr.dime.glmax.imaginary = img.imaginary[i];
-                    hdr.dime.glmax.real = img[i];
-                }
-            }
-            else if ( Math.hypot(hdr.dime.glmin.imaginary, hdr.dime.glmin.real) == Math.hypot(img.imaginary[i], img[i]) )
-            {
-                if ( Math.atan2(hdr.dime.glmin.imaginary, hdr.dime.glmin.real) > Math.atan2(img.imaginary[i], img[i]) )
-                {
-                    hdr.dime.glmin.imaginary = img.imaginary[i];
-                    hdr.dime.glmin.real = img[i];
-                }
-            }
+            hdr.dime.glmax = item;
         }
-    }
-    else
-    {
-        //  Update the global min and max values
-        let img_tmp = structuredClone(img).flat(Infinity);
-        for (let item of img_tmp) {
-            if ( hdr.dime.glmax < item ) {
-                hdr.dime.glmax = item;
-            }
 
-            if ( hdr.dime.glmin > item ) {
-                hdr.dime.glmin = item;
-            }
+        if ( hdr.dime.glmin > item )
+        {
+            hdr.dime.glmin = item;
         }
     }
 
     fid.fclose();
 
-    //  old_RGB treat RGB slice by slice, now it is treated voxel by voxel
-    if ( old_RGB && hdr.dime.datatype == 128 && hdr.dime.bitpix == 24 )
+    // Handle RGB data
+    if (hdr.dime.datatype === 128 && hdr.dime.bitpix === 24)
     {
-        // remove squeeze
-        img = reshape(img, [hdr.dime.dim[1], hdr.dime.dim[2], 3, slice_idx.length, img_idx.length, dim5_idx.length, dim6_idx.length, dim7_idx.length]);
-        img = permute(img, 0, 1, 3, 2, 4, 5, 6, 7);
+        img = reshape(img, old_RGB ?
+            [hdr.dime.dim[1], hdr.dime.dim[2], 3, hdr.dime.dim[3], img_idx.length, dim5_idx.length, dim6_idx.length, dim7_idx.length] :
+            [3, hdr.dime.dim[1], hdr.dime.dim[2], hdr.dime.dim[3], img_idx.length, dim5_idx.length, dim6_idx.length, dim7_idx.length]);
+        img = permute(img, old_RGB ? [0, 1, 3, 2, 4, 5, 6, 7] : [1, 2, 3, 0, 4, 5, 6, 7]);
     }
-    else if (hdr.dime.datatype == 128 && hdr.dime.bitpix == 24)
+    else if (hdr.dime.datatype === 511 && hdr.dime.bitpix === 96)
     {
-        // remove squeeze
-        img = reshape(img, [3, hdr.dime.dim[1], hdr.dime.dim[2], slice_idx.length, img_idx.length, dim5_idx.length, dim6_idx.length, dim7_idx.length]);
-        img = permute(img, 1, 2, 3, 0, 4, 5, 6, 7);
-    }
-    else if (hdr.dime.datatype == 511 && hdr.dime.bitpix == 96)
-    {
-        for ( let i = 0; i < img.length; i++ )
-        {
-            img[i] = (img[i] - hdr.dime.glmin) / (hdr.dime.glmax - hdr.dime.glmin);
-        }
-
-        // remove squeeze
-        img = reshape(img, [3, hdr.dime.dim[1], hdr.dime.dim[2], slice_idx.length, img_idx.length, dim5_idx.length, dim6_idx.length, dim7_idx.length]);
-        img = permute(img, 1, 2, 3, 0, 4, 5, 6, 7);
+        img = img.map(val => (val - hdr.dime.glmin) / (hdr.dime.glmax - hdr.dime.glmin));
+        img = reshape(img, [3, hdr.dime.dim[1], hdr.dime.dim[2], hdr.dime.dim[3], img_idx.length, dim5_idx.length, dim6_idx.length, dim7_idx.length]);
+        img = permute(img, [1, 2, 3, 0, 4, 5, 6, 7]);
     }
     else
     {
-        // remove squeeze
-        img = reshape(img, [hdr.dime.dim[1], hdr.dime.dim[2], slice_idx.length, img_idx.length, dim5_idx.length, dim6_idx.length, dim7_idx.length]);
+        img = reshape(img, [hdr.dime.dim[1], hdr.dime.dim[2], hdr.dime.dim[3], img_idx.length, dim5_idx.length, dim6_idx.length, dim7_idx.length]);
     }
 
-    if ( slice_idx.length != 0 )
-        hdr.dime.dim[3] = slice_idx.length;
+    // Update dimensions
+    [img_idx, dim5_idx, dim6_idx, dim7_idx].forEach((arr, i) => {
+        if (arr.length) hdr.dime.dim[i + 4] = arr.length;
+    });
 
-    if ( img_idx.length != 0 )
-        hdr.dime.dim[4] = img_idx.length;
-
-    if ( dim5_idx.length != 0 )
-        hdr.dime.dim[5] = dim5_idx.length;
-
-    if ( dim6_idx.length != 0 )
-        hdr.dime.dim[6] = dim6_idx.length;
-
-    if ( dim7_idx.length != 0 )
-        hdr.dime.dim[7] = dim7_idx.length;
-
-    while (img.length == 1)
-    {
-        img = img[0];
-    }
+    while (img.length === 1) img = img[0];
 
     return [img, hdr];
 }
-
-

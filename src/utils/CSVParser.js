@@ -510,7 +510,7 @@ export function saveStimulationCSVFile(stimulationData, planOrder, isFunctionalM
         }).join("\n");
     })
 
-    csvContent += output;
+    csvContent += output.join("\n");
 
     if (download) {
         const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });

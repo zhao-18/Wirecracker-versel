@@ -119,6 +119,66 @@ router.post('/save-localization', async (req, res) => {
   }
 });
 
+/**
+ * Handles file record management in the database.
+ * Creates a new file record if it doesn't exist, or updates an existing one.
+ * @param {string} fileId - The unique identifier for the file
+ * @param {string} fileName - The name of the file
+ * @param {string} creationDate - The creation date of the file
+ * @param {string} modifiedDate - The last modified date of the file
+ * @param {string} token - The authorization token for the user session
+ * @returns {Promise<void>} - Resolves when the operation is complete, throws on error
+ */
+async function handleFileRecord(fileId, fileName, creationDate, modifiedDate, token) {
+  // Check if file record already exists
+  const { data: existingFile } = await supabase
+    .from('files')
+    .select('*')
+    .eq('file_id', fileId)
+    .single();
+
+  if (existingFile) {
+    // Update existing file record
+    const { error: fileError } = await supabase
+      .from('files')
+      .update({
+        filename: fileName,
+        modified_date: modifiedDate
+      })
+      .eq('file_id', fileId);
+
+    if (fileError) throw fileError;
+  } else {
+    // Get user ID from session
+    if (!token) {
+      throw new Error('No authentication token provided');
+    }
+    
+    const { data: session } = await supabase
+      .from('sessions')
+      .select('user_id')
+      .eq('token', token)
+      .single();
+      
+    if (!session?.user_id) {
+      throw new Error('Invalid or expired session');
+    }
+
+    // Insert new file record
+    const { error: fileError } = await supabase
+      .from('files')
+      .insert({
+        file_id: fileId,
+        owner_user_id: session.user_id,
+        filename: fileName,
+        creation_date: creationDate,
+        modified_date: modifiedDate
+      });
+
+    if (fileError) throw fileError;
+  }
+}
+
 // Endpoint to save designation data
 router.post('/save-designation', async (req, res) => {
   try {
@@ -137,59 +197,10 @@ router.post('/save-designation', async (req, res) => {
     if (fileId === undefined || fileId === null) {
       return res.status(400).json({ success: false, error: 'Missing file ID' });
     }
-    
-    console.log(`Processing designation save request for file ID: ${fileId}`);
-    
-    // First save/update file metadata
+
+    // Handle file record
     try {
-      // Check if file record already exists
-      const { data: existingFile } = await supabase
-        .from('files')
-        .select('*')
-        .eq('file_id', fileId)
-        .single();
-
-      if (existingFile) {
-        // Update existing file record
-        const { error: fileError } = await supabase
-          .from('files')
-          .update({
-            filename: fileName,
-            modified_date: modifiedDate
-          })
-          .eq('file_id', fileId);
-
-        if (fileError) throw fileError;
-      } else {
-        // Get user ID from session
-        const token = req.headers.authorization;
-        if (!token) {
-          return res.status(401).json({ success: false, error: 'No authentication token provided' });
-        }
-        
-        const { data: session } = await supabase
-          .from('sessions')
-          .select('user_id')
-          .eq('token', token)
-          .single();
-          
-        if (!session?.user_id) {
-          return res.status(401).json({ success: false, error: 'Invalid or expired session' });
-        }
-
-        // Insert new file record
-        const { error: fileError } = await supabase
-          .from('files')
-          .insert({
-            file_id: fileId,
-            owner_user_id: session.user_id,
-            filename: fileName,
-            creation_date: creationDate,
-            modified_date: modifiedDate
-          });
-
-        if (fileError) throw fileError;
-      }
+      await handleFileRecord(fileId, fileName, creationDate, modifiedDate, req.headers.authorization);
     } catch (error) {
       console.error('Error saving file metadata:', error);
       return res.status(500).json({ 
@@ -252,6 +263,196 @@ router.post('/save-designation', async (req, res) => {
     });
   } catch (error) {
     console.error('Error in save-designation endpoint:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message
+    });
+  }
+});
+
+// Endpoint to save stimulation data
+router.post('/save-stimulation', async (req, res) => {
+  try {
+    console.log('Received stimulation save request', req.body);
+    
+    const { electrodes, planOrder, isFunctionalMapping, fileId, fileName, creationDate, modifiedDate } = req.body;
+    
+    if (!electrodes) {
+      return res.status(400).json({ success: false, error: 'Missing electrodes data' });
+    }
+    
+    if (!planOrder) {
+      return res.status(400).json({ success: false, error: 'Missing plan order data' });
+    }
+    
+    if (fileId === undefined || fileId === null) {
+      return res.status(400).json({ success: false, error: 'Missing file ID' });
+    }
+    
+    if (isFunctionalMapping === undefined) {
+      return res.status(400).json({ success: false, error: 'Missing isFunctionalMapping flag' });
+    }
+    
+    console.log(`Processing stimulation save request for file ID: ${fileId}`);
+
+    // Handle file record
+    try {
+      await handleFileRecord(fileId, fileName, creationDate, modifiedDate, req.headers.authorization);
+    } catch (error) {
+      console.error('Error saving file metadata:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: `Failed to save file metadata: ${error.message}`
+      });
+    }
+    
+    // Check for existing stimulation with this file_id
+    const { data: existingData, error: checkError } = await supabase
+      .from('stimulation')
+      .select('id')
+      .eq('file_id', fileId);
+      
+    if (checkError) {
+      console.error('Error checking existing stimulation:', checkError);
+    } else if (existingData && existingData.length > 0) {
+      console.log(`Found existing stimulation with file_id ${fileId}, updating...`);
+      const { error: updateError } = await supabase
+        .from('stimulation')
+        .update({
+          stimulation_data: electrodes,
+          plan_order: planOrder,
+          is_mapping: isFunctionalMapping
+        })
+        .eq('file_id', fileId);
+        
+      if (updateError) {
+        console.error('Error updating stimulation:', updateError);
+        return res.status(500).json({ 
+          success: false, 
+          error: `Failed to update existing stimulation: ${updateError.message}`
+        });
+      }
+      console.log('Successfully updated stimulation');
+    } else {
+      // Insert new stimulation record
+      console.log('Creating new stimulation record...');
+      const { error: insertError } = await supabase
+        .from('stimulation')
+        .insert({
+          file_id: fileId,
+          stimulation_data: electrodes,
+          plan_order: planOrder,
+          is_mapping: isFunctionalMapping
+        });
+        
+      if (insertError) {
+        console.error('Error inserting stimulation:', insertError);
+        return res.status(500).json({ 
+          success: false, 
+          error: `Failed to save stimulation: ${insertError.message}`
+        });
+      }
+      console.log('Successfully created new stimulation');
+    }
+    
+    res.status(200).json({ 
+      success: true,
+      message: 'Stimulation data saved successfully',
+      fileId: fileId
+    });
+  } catch (error) {
+    console.error('Error in save-stimulation endpoint:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message
+    });
+  }
+});
+
+// Endpoint to save test selection data
+router.post('/save-test-selection', async (req, res) => {
+  try {
+    console.log('Received test selection save request', req.body);
+    
+    const { tests, contacts, fileId, fileName, creationDate, modifiedDate } = req.body;
+    
+    if (!tests) {
+      return res.status(400).json({ success: false, error: 'Missing tests data' });
+    }
+    
+    if (!contacts) {
+      return res.status(400).json({ success: false, error: 'Missing contacts data' });
+    }
+    
+    if (fileId === undefined || fileId === null) {
+      return res.status(400).json({ success: false, error: 'Missing file ID' });
+    }
+
+    // Handle file record
+    try {
+      await handleFileRecord(fileId, fileName, creationDate, modifiedDate, req.headers.authorization);
+    } catch (error) {
+      console.error('Error saving file metadata:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: `Failed to save file metadata: ${error.message}`
+      });
+    }
+    
+    // Check for existing test selection with this file_id
+    const { data: existingData, error: checkError } = await supabase
+      .from('test_selection')
+      .select('id')
+      .eq('file_id', fileId);
+      
+    if (checkError) {
+      console.error('Error checking existing test selection:', checkError);
+    } else if (existingData && existingData.length > 0) {
+      console.log(`Found existing test selection with file_id ${fileId}, updating...`);
+      const { error: updateError } = await supabase
+        .from('test_selection')
+        .update({
+          tests: tests,
+          contacts: contacts
+        })
+        .eq('file_id', fileId);
+        
+      if (updateError) {
+        console.error('Error updating test selection:', updateError);
+        return res.status(500).json({ 
+          success: false, 
+          error: `Failed to update existing test selection: ${updateError.message}`
+        });
+      }
+      console.log('Successfully updated test selection');
+    } else {
+      // Insert new test selection record
+      console.log('Creating new test selection record...');
+      const { error: insertError } = await supabase
+        .from('test_selection')
+        .insert({
+          file_id: fileId,
+          tests: tests,
+          contacts: contacts
+        });
+        
+      if (insertError) {
+        console.error('Error inserting test selection:', insertError);
+        return res.status(500).json({ 
+          success: false, 
+          error: `Failed to save test selection: ${insertError.message}`
+        });
+      }
+      console.log('Successfully created new test selection');
+    }
+    
+    res.status(200).json({ 
+      success: true,
+      message: 'Test selection data saved successfully',
+      fileId: fileId
+    });
+  } catch (error) {
+    console.error('Error in save-test-selection endpoint:', error);
     res.status(500).json({ 
       success: false, 
       error: error.message

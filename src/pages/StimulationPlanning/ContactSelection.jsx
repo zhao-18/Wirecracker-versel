@@ -5,6 +5,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { Container, Button, darkColors, lightColors } from 'react-floating-action-button';
 import { saveStimulationCSVFile } from "../../utils/CSVParser";
+import config from "../../../config.json" with { type: 'json' };
 
 const ContactSelection = ({ initialData = {}, onStateChange, savedState = {}, isFunctionalMapping = false }) => {
     const [electrodes, setElectrodes] = useState(savedState.electrodes || initialData.data || demoContactData)
@@ -303,6 +304,7 @@ const Contact = ({ contact, onClick }) => {
 // Planning pane on the right
 const PlanningPane = ({ state, electrodes, contacts, onDrop, onDropBack, submitFlag, setSubmitFlag, setElectrodes, onStateChange, savedState, isFunctionalMapping = false }) => {
     const [hoverIndex, setHoverIndex] = useState(null);
+    const [showSaveSuccess, setShowSaveSuccess] = useState(false);
 
     let index = hoverIndex; // For synchronization between hover and drop
 
@@ -375,27 +377,37 @@ const PlanningPane = ({ state, electrodes, contacts, onDrop, onDropBack, submitF
         window.dispatchEvent(event);
     };
 
+    const handleSave = async () => {
+        try {
+            await exportState(state, electrodes, isFunctionalMapping, false);
+            setShowSaveSuccess(true);
+            setTimeout(() => setShowSaveSuccess(false), 3000); // Hide after 3 seconds
+        } catch (error) {
+            console.error('Error saving:', error);
+        }
+    };
+
     return (
         <div ref={drop} className={`p-4 w-1/4 border-l shadow-lg ${isOver ? "bg-gray-100" : ""}`}>
             <h2 className="text-2xl font-bold mb-4">Planning Pane</h2>
             {contacts.length === 0 ? (
-                <p className="text-lg text-gray-500">Drag contacts here</p> // Show text if there are no contacts in the pane
+                <p className="text-lg text-gray-500">Drag contacts here</p>
             ) : (
                 <ul className="space-y-2 relative">
                     {contacts.map((contact, index) => (
                         <React.Fragment key={contact.id}>
                             {hoverIndex === index && isOver && (
-                                <div className="h-1 bg-blue-500 w-full my-1"></div> // Blue bar within the list
+                                <div className="h-1 bg-blue-500 w-full my-1"></div>
                             )}
                             <PlanningContact contact={contact} onDropBack={onDropBack} onStateChange={onStateChange} savedState={savedState} setElectrodes={setElectrodes} />
                         </React.Fragment>
                     ))}
                     {hoverIndex >= contacts.length && isOver && (
-                        <div className="h-1 bg-blue-500 w-full my-1"></div> // Blue bar at the end of list
+                        <div className="h-1 bg-blue-500 w-full my-1"></div>
                     )}
                 </ul>
             )}
-            <div className="flex space-x-2 absolute right-10 bottom-10 ">
+            <div className="flex space-x-2 absolute right-10 bottom-10">
                 {isFunctionalMapping ? (
                     <button className={`py-2 px-4 bg-blue-500 text-white font-bold rounded ${
                             contacts.length === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700 border border-blue-700"
@@ -404,10 +416,25 @@ const PlanningPane = ({ state, electrodes, contacts, onDrop, onDropBack, submitF
                     </button>
                 ) : (
                     <div />
-
                 )}
 
-                {/* export button. Disabled if no contact is in the list */}
+                <div className="relative">
+                    <button
+                        className={`py-2 px-4 bg-green-500 text-white font-bold rounded ${
+                            contacts.length === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-green-700 border border-green-700"
+                        }`}
+                        onClick={handleSave}
+                        disabled={contacts.length === 0}
+                    >
+                        Save
+                    </button>
+                    {showSaveSuccess && (
+                        <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white px-3 py-1 rounded text-sm whitespace-nowrap z-50">
+                            Save successful!
+                        </div>
+                    )}
+                </div>
+
                 <button className={`py-2 px-4 bg-blue-500 text-white font-bold rounded ${
                         contacts.length === 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700 border border-blue-700"
                         }`} onClick={() => exportState(state, electrodes, isFunctionalMapping)}>
@@ -420,7 +447,6 @@ const PlanningPane = ({ state, electrodes, contacts, onDrop, onDropBack, submitF
 
 // Draggable contact in planning pane area
 const PlanningContact = ({ contact, onDropBack, onStateChange, savedState, setElectrodes }) => {
-    console.log(contact)
     // To persist between tab switch and reload
     const [frequency, setFrequency] = useState(savedState.frequency?.[contact.id] || contact.frequency || 0);
     const [duration, setDuration] = useState(savedState.duration?.[contact.id] || contact.duration || 0);
@@ -551,6 +577,7 @@ const PlanningContact = ({ contact, onDropBack, onStateChange, savedState, setEl
 
 const exportState = async (state, electrodes, isFunctionalMapping, download = true) => {
     try {
+        let planOrder = state.planningContacts.map(contact => contact.id);
         // First save to database if we have a file ID
         if (state.fileId) {
             console.log('Saving stimulation plan to database...');
@@ -561,54 +588,42 @@ const exportState = async (state, electrodes, isFunctionalMapping, download = tr
                 alert('User not authenticated. Please log in to save designations.');
                 return;
             }
+            
+            try {
+                // Save stimulation data to database
+                const response = await fetch(`${config.backendURL}/api/save-stimulation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token
+                    },
+                    body: JSON.stringify({
+                        electrodes: electrodes,
+                        planOrder: planOrder,
+                        isFunctionalMapping: isFunctionalMapping,
+                        fileId: state.fileId,
+                        fileName: state.fileName,
+                        creationDate: state.creationDate,
+                        modifiedDate: new Date().toISOString()
+                    }),
+                });
 
-//             try {
-//                 // First save/update file metadata
-//                 const response = await fetch('http://localhost:5000/api/save-designation', {
-//                     method: 'POST',
-//                     headers: {
-//                         'Content-Type': 'application/json',
-//                         'Authorization': token
-//                     },
-//                     body: JSON.stringify({
-//                         designationData: electrodes,
-//                         localizationData: localizationData,
-//                         fileId: state.fileId,
-//                         fileName: state.fileName,
-//                         creationDate: state.creationDate,
-//                         modifiedDate: new Date().toISOString()
-//                     }),
-//                 });
-//
-//                 const result = await response.json();
-//                 if (!result.success) {
-//                     console.error('Failed to save designation:', result.error);
-//                     alert(`Failed to save designation: ${result.error}`);
-//                     return;
-//                 }
-//
-//                 // Update the state with new modified date
-//                 setState(prevState => ({
-//                     ...prevState,
-//                     modifiedDate: new Date().toISOString()
-//                 }));
-//
-//                 // Show success feedback if this was a save operation
-//                 if (!download) {
-//                     setShowSaveSuccess(true);
-//                     setTimeout(() => setShowSaveSuccess(false), 3000); // Hide after 3 seconds
-//                 }
-//
-//                 console.log('Designation saved successfully');
-//             } catch (error) {
-//                 console.error('Error saving designation:', error);
-//                 alert(`Error saving designation: ${error.message}`);
-//                 return;
-//             }
+                const result = await response.json();
+                if (!result.success) {
+                    console.error('Failed to save stimulation:', result.error);
+                    alert(`Failed to save stimulation: ${result.error}`);
+                    return;
+                }
+
+                console.log('Stimulation saved successfully');
+            } catch (error) {
+                console.error('Error saving stimulation:', error);
+                alert(`Error saving stimulation: ${error.message}`);
+                return;
+            }
         }
 
         // Then export to CSV as before
-        let planOrder = state.planningContacts.map(contact => contact.id);
         saveStimulationCSVFile(electrodes, planOrder, isFunctionalMapping, download);
     } catch (error) {
         console.error('Error exporting contacts:', error);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { demoContactsData, demoTestData } from "./demoContactsData";
 import { saveTestCSVFile } from "../../utils/CSVParser";
+import config from "../../../config.json" with { type: 'json' };
 
 const FunctionalTestSelection = ({
     initialData = {},
@@ -162,65 +163,67 @@ const FunctionalTestSelection = ({
     };
 
     const exportTests = async (tests, contacts, download = true) => {
-
         try {
             // First save to database if we have a file ID
-            // if (state.fileId) {
-            //     console.log('Saving designation to database...');
-            //
-            //     // Get user ID from session
-            //     const token = localStorage.getItem('token');
-            //     if (!token) {
-            //         alert('User not authenticated. Please log in to save designations.');
-            //         return;
-            //     }
-            //
-            //     try {
-            //         // First save/update file metadata
-            //         const response = await fetch('http://localhost:5000/api/save-designation', {
-            //             method: 'POST',
-            //             headers: {
-            //                 'Content-Type': 'application/json',
-            //                 'Authorization': token
-            //             },
-            //             body: JSON.stringify({
-            //                 designationData: electrodes,
-            //                 localizationData: localizationData,
-            //                 fileId: state.fileId,
-            //                 fileName: state.fileName,
-            //                 creationDate: state.creationDate,
-            //                 modifiedDate: new Date().toISOString()
-            //             }),
-            //         });
-            //
-            //         const result = await response.json();
-            //         if (!result.success) {
-            //             console.error('Failed to save designation:', result.error);
-            //             alert(`Failed to save designation: ${result.error}`);
-            //             return;
-            //         }
-            //
-            //         // Update the state with new modified date
-            //         setState(prevState => ({
-            //             ...prevState,
-            //             modifiedDate: new Date().toISOString()
-            //         }));
-            //
-            //         // Show success feedback if this was a save operation
-            //         if (!download) {
-            //             setShowSaveSuccess(true);
-            //             setTimeout(() => setShowSaveSuccess(false), 3000); // Hide after 3 seconds
-            //         }
-            //
-            //         console.log('Designation saved successfully');
-            //     } catch (error) {
-            //         console.error('Error saving designation:', error);
-            //         alert(`Error saving designation: ${error.message}`);
-            //         return;
-            //     }
-            // }
-            // Then export to CSV as before
-            saveTestCSVFile(tests, contacts, download);
+            if (savedState.fileId) {
+                console.log('Saving test selection to database...');
+
+                // Get user ID from session
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    alert('User not authenticated. Please log in to save test selections.');
+                    return;
+                }
+
+                try {
+                    // Save/update test selection data
+                    const response = await fetch(`${config.backendURL}/api/save-test-selection`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': token
+                        },
+                        body: JSON.stringify({
+                            tests: tests,
+                            contacts: contacts,
+                            fileId: savedState.fileId,
+                            fileName: savedState.fileName,
+                            creationDate: savedState.creationDate,
+                            modifiedDate: new Date().toISOString()
+                        }),
+                    });
+
+                    const result = await response.json();
+                    if (!result.success) {
+                        console.error('Failed to save test selection:', result.error);
+                        alert(`Failed to save test selection: ${result.error}`);
+                        return;
+                    }
+
+                    // Update the state with new modified date
+                    setState(prevState => ({
+                        ...prevState,
+                        modifiedDate: new Date().toISOString()
+                    }));
+
+                    // Show success feedback if this was a save operation
+                    if (!download) {
+                        setShowSaveSuccess(true);
+                        setTimeout(() => setShowSaveSuccess(false), 3000); // Hide after 3 seconds
+                    }
+
+                    console.log('Test selection saved successfully');
+                } catch (error) {
+                    console.error('Error saving test selection:', error);
+                    alert(`Error saving test selection: ${error.message}`);
+                    return;
+                }
+            }
+
+            // Then export to CSV if download is true
+            if (download) {
+                saveTestCSVFile(tests, contacts, download);
+            }
         } catch (error) {
             console.error("Error exporting contacts:", error);
             alert(`Error exporting contacts: ${error.message}`);
